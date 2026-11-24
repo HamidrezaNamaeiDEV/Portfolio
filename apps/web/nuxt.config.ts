@@ -2,6 +2,10 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   ssr: true,
+  devtools: { enabled: false },
+  $development: {
+    devtools: { enabled: true },
+  },
   hooks: {
     'build:manifest'(manifest) {
       // Nuxt otherwise emits an SSR prefetch for this dynamic import.

@@ -334,6 +334,18 @@ test('mobile and reduced motion retain the poster without model transfer', async
       )
       await expect(gallery(surface)).toHaveCount(0)
       await expect(surface.locator('canvas')).toHaveCount(0)
+      await expect(surface.locator('.gallery-scroll--live')).toHaveCount(0)
+      const staticHero = surface.locator('.intro')
+      const priorTop = (await staticHero.boundingBox())!.y
+      await surface.evaluate(() =>
+        window.scrollTo({ top: 240, behavior: 'instant' }),
+      )
+      await expect
+        .poll(async () => (await staticHero.boundingBox())!.y)
+        .toBeLessThan(priorTop - 200)
+      await surface.evaluate(() =>
+        window.scrollTo({ top: 0, behavior: 'instant' }),
+      )
       expect(requested.some((url) => url.includes('.glb'))).toBe(false)
     }
     await mkdir(screenshotDirectory, { recursive: true })
@@ -443,27 +455,23 @@ test('five station tour resolves published categories and profiles the live sess
       if (capture) {
         const before = await sample()
         const frames = await page.evaluate(async () => {
-          const input = document.querySelector<HTMLSelectElement>(
-            '[aria-label="Engineering station"]',
-          )!
+          const track = document.querySelector<HTMLElement>('.gallery-scroll')!
+          const intro = track.querySelector<HTMLElement>('.intro')!
+          const origin = track.getBoundingClientRect().top + window.scrollY
+          const distance = track.offsetHeight - intro.offsetHeight
           const intervals: number[] = []
           let previous = 0
           const start = performance.now()
-          let stop = -1
           await new Promise<void>((resolve) => {
             function step(time: number) {
               if (previous) intervals.push(time - previous)
               previous = time
               const elapsed = time - start
               if (elapsed >= 65_000) return resolve()
-              const next = Math.floor(elapsed / 1300) % 5
-              if (next !== stop) {
-                stop = next
-                input.value = String(stop)
-                input.dispatchEvent(new Event('change'))
-              }
+              const lane = (elapsed / 5_200) % 2
+              const progress = lane <= 1 ? lane : 2 - lane
               window.scrollTo({
-                top: 65 + Math.sin(elapsed / 240) * 60,
+                top: origin + distance * progress,
                 behavior: 'instant',
               })
               requestAnimationFrame(step)
@@ -514,6 +522,7 @@ for (const [width, height] of [
   test(`desktop gallery pins and follows native scroll at ${width} × ${height}`, async ({
     page,
   }) => {
+    test.setTimeout(60_000)
     await page.setViewportSize({ width, height })
     await page.goto(web)
     const hero = page.locator('.gallery-scroll .intro')
@@ -544,6 +553,14 @@ for (const [width, height] of [
       expect(Math.abs((await hero.boundingBox())!.y)).toBeLessThan(2)
     }
     for (const index of [0, 1, 2, 3, 4, 2, 0]) await stop(index)
+    expect(
+      (await page.locator('#technology-stack').boundingBox())!.y,
+    ).toBeGreaterThan(height)
+    await page.mouse.move(width * 0.8, height * 0.55)
+    await page.mouse.wheel(0, Math.round(range / 4))
+    await expect(canvas).toHaveAttribute('data-gallery-stop', '1')
+    expect(Math.abs((await hero.boundingBox())!.y)).toBeLessThan(2)
+    await stop(0)
 
     await selector.focus()
     await selector.press('ArrowDown')

@@ -12,6 +12,7 @@
     "libs/*"
   ],
   "scripts": {
+    "dev:web": "nuxt dev apps/web --dotenv ../../.env --host 127.0.0.1 --port 3000",
     "lint": "nx run-many -t lint",
     "typecheck": "nx run-many -t typecheck",
     "build": "nx run-many -t build",

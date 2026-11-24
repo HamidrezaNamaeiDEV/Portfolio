@@ -144,6 +144,10 @@ async function activate() {
     if (scene !== corridor) return
     window.addEventListener('scroll', syncProgress, { passive: true })
     window.addEventListener('resize', syncProgress)
+    const range = scrollRange()
+    if (range && window.scrollY < range.start) {
+      window.scrollTo({ top: range.start, behavior: 'instant' })
+    }
     syncProgress()
   } catch {
     if (!request.signal.aborted) stop('failed')
