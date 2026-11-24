@@ -351,14 +351,9 @@ defineExpose({ dirty })
 .editor form > .editor__fields > .editor__actions {
   justify-content: flex-end;
   flex-wrap: wrap;
-  position: sticky;
-  inset-block-end: 0;
-  z-index: 1;
-  margin-inline: calc(clamp(1rem, 4vw, 1.75rem) * -1);
-  margin-block-end: calc(clamp(1rem, 4vw, 1.75rem) * -1);
-  padding: var(--a-space-3) clamp(1rem, 4vw, 1.75rem);
+  margin-block-start: var(--a-space-3);
+  padding-block-start: var(--a-space-3);
   border-block-start: 1px solid var(--admin-line);
-  background: var(--admin-panel);
 }
 
 dialog {

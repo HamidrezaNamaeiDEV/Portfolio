@@ -1,5 +1,10 @@
 import { mkdir, readFile } from 'node:fs/promises'
-import { expect, test, type APIRequestContext } from '@playwright/test'
+import {
+  expect,
+  test,
+  type APIRequestContext,
+  type Locator,
+} from '@playwright/test'
 import type { AdminContent, ContentKind, PublicPortfolio } from '@a/contracts'
 
 const web = 'http://127.0.0.1:47121'
@@ -64,6 +69,21 @@ async function publicContent(
   const response = await request.get(`${web}/api/portfolio`)
   expect(response.ok(), await response.text()).toBeTruthy()
   return response.json()
+}
+
+async function expectNoOverlap(field: Locator, actions: Locator) {
+  const [fieldBox, actionsBox] = await Promise.all([
+    field.boundingBox(),
+    actions.boundingBox(),
+  ])
+  expect(fieldBox).not.toBeNull()
+  expect(actionsBox).not.toBeNull()
+  const overlaps =
+    fieldBox!.x < actionsBox!.x + actionsBox!.width &&
+    fieldBox!.x + fieldBox!.width > actionsBox!.x &&
+    fieldBox!.y < actionsBox!.y + actionsBox!.height &&
+    fieldBox!.y + fieldBox!.height > actionsBox!.y
+  expect(overlaps).toBe(false)
 }
 
 test('admin requires an owner, checks exact origin, and revokes a replayed session', async ({
@@ -699,6 +719,8 @@ test('bulk skill changes require explicit valid IDs and leave other seed records
   expect(after.skills.find(({ id }) => id === preservedSeedId)?.status).toBe(
     'draft',
   )
+  await remove(request, 'skills', first)
+  await remove(request, 'skills', second)
 })
 
 test('overview reflects loaded records and offers a direct technology-stack action', async ({
@@ -737,6 +759,9 @@ test('technology stack filters and bulk publishing apply only to selected skills
   const categoryId = await save(page.request, 'categories', {
     name: 'Phase 4 Filter Category',
   })
+  const otherCategoryId = await save(page.request, 'categories', {
+    name: 'Phase 4 Other Filter Category',
+  })
   const proficiencyId = await save(page.request, 'proficiencies', {
     name: 'Phase 4 Filter Proficiency',
   })
@@ -771,6 +796,18 @@ test('technology stack filters and bulk publishing apply only to selected skills
   await page
     .getByRole('checkbox', { name: 'Select Phase 4 Filtered skill' })
     .check()
+  await page.getByLabel('Filter by category').selectOption(otherCategoryId)
+  await expect(
+    page.getByText('1 selected, 1 outside current filters'),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Clear selection' }).click()
+  await expect(
+    page.getByRole('group', { name: 'Selected skill actions' }),
+  ).toHaveCount(0)
+  await page.getByLabel('Filter by category').selectOption(categoryId)
+  await page
+    .getByRole('checkbox', { name: 'Select Phase 4 Filtered skill' })
+    .check()
   page.once('dialog', (dialog) => dialog.accept())
   const bulkResponsePromise = page.waitForResponse(
     (response) => response.url() === `${admin}/api/content/bulk`,
@@ -796,6 +833,7 @@ test('technology stack filters and bulk publishing apply only to selected skills
   await remove(page.request, 'skills', skillId)
   await remove(page.request, 'skills', untouchedId)
   await remove(page.request, 'categories', categoryId)
+  await remove(page.request, 'categories', otherCategoryId)
   await remove(page.request, 'proficiencies', proficiencyId)
 })
 
@@ -1070,6 +1108,34 @@ test('published profile, links, and experience logo render in public server-side
   )
   await remove(request, 'experiences', experienceId)
   await remove(request, 'projects', projectId)
+})
+
+test('profile and content save actions never cover editable fields', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await signInInBrowser(page)
+  await page.getByRole('link', { name: 'Profile', exact: true }).click()
+  const profileActions = page.locator('.profile-editor__actions')
+  await expectNoOverlap(page.getByLabel('Contact email'), profileActions)
+  const profileVisibility = page.getByLabel('Visible after publishing')
+  await profileVisibility.scrollIntoViewIfNeeded()
+  await expectNoOverlap(profileVisibility, profileActions)
+
+  await page
+    .getByRole('link', { name: 'Technology stack', exact: true })
+    .click()
+  await page.getByRole('button', { name: 'Work experience' }).click()
+  await page.getByRole('button', { name: 'Add experience' }).click()
+  const editor = page.getByRole('region', { name: 'Add experience' })
+  const responsibilities = editor.getByLabel('Responsibilities', {
+    exact: true,
+  })
+  await responsibilities.scrollIntoViewIfNeeded()
+  await expectNoOverlap(
+    responsibilities,
+    editor.locator('form > .editor__fields > .editor__actions'),
+  )
 })
 
 test('captures authenticated Phase 4 admin reference screenshots', async ({

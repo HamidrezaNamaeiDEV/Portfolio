@@ -58,6 +58,10 @@ export interface ExperienceFields {
   skills: NamedRecord[]
 }
 export interface ExperienceRecord extends ExperienceFields, EditorialFields {}
+export type PublicExperience = Omit<ExperienceFields, 'companyLogo'> & {
+  description: string
+  companyLogo: string | null
+}
 export interface ProjectRecord extends NamedRecord, EditorialFields {
   slug: string
   url: string
@@ -120,9 +124,7 @@ export interface PublicPortfolio {
       projects: Array<NamedRecord & { slug: string }>
     }
   >
-  experiences: Array<
-    ExperienceFields & { description: string; companyLogo: string | null }
-  >
+  experiences: PublicExperience[]
   projects: Array<
     Pick<
       ProjectRecord,

@@ -38,9 +38,14 @@ employment, achievement, image, and link fields remain blank.
 - Kept the content table semantic while changing its small-screen rows to a
   readable grid. Preserved an unsaved editor draft in memory through a 401 and
   owner reauthentication.
+- Kept selected skills explicit across filters by reporting how many selected
+  rows are outside the current results and adding a clear-selection action.
 - Added profile status and visibility messaging, blank editable fields, a
   profile image control, and a preview that separates published content from
   visible draft candidates.
+- Kept content/profile save controls at the end of their forms so they remain
+  reachable without covering input fields; Playwright checks their viewport
+  bounds against editable controls.
 
 An independent Impeccable review identified draft loss after a 401, narrow
 mobile content labels, a long experience form, unclear publication/visibility
@@ -48,6 +53,11 @@ copy, and a suppressed focus ring. These were addressed and rechecked in the
 browser. The second independent review reported no deterministic findings at
 1440×900 and 390×844. Screenshot review led to wrapping both mobile navigation
 rows and capturing the long profile form in two real viewport views.
+
+A separate implementation review identified a nullable public company-logo
+type, save controls covering editable fields, and selected skills remaining
+selected outside the current filter. These were corrected and covered by the
+browser suite; the final review found no critical or important findings.
 
 ## New functionality
 
@@ -117,16 +127,18 @@ emit a broken externalized Vue timing import during earlier build attempts.
 | `env -u DEBUG PATH='/home/hamidreza.namaee@part.local/.nvm/versions/node/v24.22.3/bin':"$PATH" npm run typecheck` | Passed; 5 Nx tasks. |
 | `env -u DEBUG PATH='/home/hamidreza.namaee@part.local/.nvm/versions/node/v24.22.3/bin':"$PATH" npm run build` | Passed; 3 build tasks. |
 | `env -u DEBUG PATH='/home/hamidreza.namaee@part.local/.nvm/versions/node/v24.22.3/bin':"$PATH" npm test` | Passed; 5 Vitest tests in 2 files. |
-| `env -u DEBUG PATH='/home/hamidreza.namaee@part.local/.nvm/versions/node/v24.22.3/bin':"$PATH" npm run test:e2e` | Passed; 18 Playwright tests against disposable PostgreSQL 18.7. |
+| `env -u DEBUG PATH='/home/hamidreza.namaee@part.local/.nvm/versions/node/v24.22.3/bin':"$PATH" npm run test:e2e` | Passed; 19 Playwright tests against disposable PostgreSQL 18.7. |
+| `env -u DEBUG PATH='/home/hamidreza.namaee@part.local/.nvm/versions/node/v24.22.3/bin':"$PATH" npm run test:e2e -- -g 'profile and content save actions'` | Passed; focused near-bottom profile and experience field overlap checks. |
 | `env -u DEBUG PATH='/home/hamidreza.namaee@part.local/.nvm/versions/node/v24.22.3/bin':"$PATH" npm run test:cms` | Passed; schema, migration, write/read, transaction rollback, anonymous denial, and isolated backup recovery checks. |
 | `env -u DEBUG PATH='/home/hamidreza.namaee@part.local/.nvm/versions/node/v24.22.3/bin':"$PATH" npm run format:check` | Passed; all matched files use Prettier formatting. |
 | `env -u DEBUG PATH='/home/hamidreza.namaee@part.local/.nvm/versions/node/v24.22.3/bin':"$PATH" npm run check:schema -w @a/cms` | Passed; frozen GraphQL and Prisma schemas match, Prisma Client generated. |
 
 The browser suite covers owner and origin protection, the exact seed inventory,
 CRUD and published SSR, unsafe URL rejection, image gating, explicit bulk
-actions, profile draft defaults, 401 recovery, preview cache/index headers,
-published-versus-draft separation, public profile and links, desktop/mobile
-flows, and screenshot generation.
+actions and filter-hidden selection state, profile draft defaults, 401 recovery,
+preview cache/index headers, published-versus-draft separation, public profile
+and links, save-control overlap, desktop/mobile flows, and screenshot
+generation. The final Playwright run passed all 19 tests.
 
 ## Remaining issues and risks
 

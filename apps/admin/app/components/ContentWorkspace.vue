@@ -61,6 +61,10 @@ const filtered = computed(() => {
         )),
   )
 })
+const selectedOutsideFilteredCount = computed(() => {
+  const filteredIds = new Set(filtered.value.map(({ id }) => id))
+  return selected.value.filter((id) => !filteredIds.has(id)).length
+})
 
 async function load() {
   loading.value = true
@@ -125,6 +129,10 @@ function toggleSelected(id: string, event: Event) {
   selected.value = checked
     ? [...new Set([...selected.value, id])]
     : selected.value.filter((selectedId) => selectedId !== id)
+}
+
+function clearSelection() {
+  selected.value = []
 }
 
 function openEditor(item?: ContentRecord) {
@@ -360,7 +368,21 @@ async function bulkChange(
           role="group"
           aria-label="Selected skill actions"
         >
-          <span>{{ selected.length }} selected</span>
+          <span aria-live="polite">
+            {{ selected.length }} selected<span
+              v-if="selectedOutsideFilteredCount"
+              >, {{ selectedOutsideFilteredCount }} outside current
+              filters</span
+            >
+          </span>
+          <button
+            class="button"
+            type="button"
+            :disabled="busy"
+            @click="clearSelection"
+          >
+            Clear selection
+          </button>
           <button
             class="button button--primary"
             type="button"

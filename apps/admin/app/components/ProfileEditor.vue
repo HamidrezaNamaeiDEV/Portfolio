@@ -313,18 +313,13 @@ async function save() {
 }
 
 .profile-editor__actions {
-  position: sticky;
-  inset-block-end: 0;
-  z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: var(--a-space-2);
-  margin-inline: calc(clamp(1rem, 4vw, 1.75rem) * -1);
-  margin-block-end: calc(clamp(1rem, 4vw, 1.75rem) * -1);
-  padding: var(--a-space-3) clamp(1rem, 4vw, 1.75rem);
+  margin-block-start: var(--a-space-3);
+  padding-block-start: var(--a-space-3);
   border-block-start: 1px solid var(--admin-line);
-  background: var(--admin-panel);
 }
 
 .profile-editor__actions p {

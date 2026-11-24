@@ -95,5 +95,5 @@
 - [x] Update `docs/architecture/data-model.md`, `docs/architecture/security.md`, add the Phase 4 ADR, update the decisions index and mark Phase 4 complete in `docs/development-roadmap.md`.
 - [x] Write `docs/phase-4-admin-ux.md` with reused functionality, UI changes, new functionality, screenshot paths, files changed, exact commands/results, known gaps, architecture deviations, and Phase 5 recommendations.
 - [x] Run the exact pinned-toolchain checks: `npm run lint`, `npm run typecheck`, `npm run build`, `npm test`, `npm run test:e2e`, `npm run test:cms`, `npm run format:check`, and `npm run check:schema -w @a/cms`.
-- [ ] Review every command result and the final unstaged diff. Verify the staged Phase 3 index is preserved, no new dependency was added, no production operation occurred, and no Phase 5/3D work slipped into scope.
-- [ ] Stop at Phase 4 and return the report with any remaining issues; do not start Phase 5.
+- [x] Review every command result and the final unstaged diff. Confirm Phase 4 follow-up edits remain unstaged, no new dependency was added, no production operation occurred, and no Phase 5/3D work slipped into scope.
+- [x] Stop at Phase 4 and return the report with any remaining issues; do not start Phase 5.
