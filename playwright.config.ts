@@ -13,7 +13,11 @@ export default defineConfig({
     {
       command: 'node apps/web/.output/server/index.mjs',
       url: 'http://127.0.0.1:47121',
-      env: { NITRO_HOST: '127.0.0.1', NITRO_PORT: '47121' },
+      env: {
+        NITRO_HOST: '127.0.0.1',
+        NITRO_PORT: '47121',
+        NUXT_PUBLIC_SITE_URL: 'http://127.0.0.1:47121',
+      },
       reuseExistingServer: false,
     },
     {

@@ -42,7 +42,11 @@ export default [
           depConstraints: [
             {
               sourceTag: 'scope:web',
-              onlyDependOnLibsWithTags: ['type:tokens', 'type:contracts'],
+              onlyDependOnLibsWithTags: [
+                'type:tokens',
+                'type:contracts',
+                'type:scene',
+              ],
             },
             {
               sourceTag: 'scope:admin',

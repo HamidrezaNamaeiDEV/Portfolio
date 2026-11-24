@@ -1,4 +1,10 @@
-# Proposed 3D rendering architecture
+# 3D rendering architecture
+
+[Phase 6A](../phase-6-3d-gallery.md) established direct Three.js, explicit
+desktop activation and a static phone tier. [Phase 6B](../phase-6b-gallery.md)
+extends the approved baseline to five desktop stations. The sections below
+capture the original architecture proposal, including future CMS controls
+and physical-device gates.
 
 The homepage presents one architectural corridor and five stations. Use the selected image as the visual reference for sightlines, alcoves, warm lighting, concrete and glass, typography, and restrained emerald accents. Create or commission a clean corridor poster without baked-in site copy. Keep all headings, station descriptions and navigation in HTML. [Visual reference](../design/AI-Native%20Engineer%20Portfolio%20Gallery.png)
 

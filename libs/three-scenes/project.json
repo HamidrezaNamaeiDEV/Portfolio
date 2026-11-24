@@ -1,0 +1,11 @@
+{
+  "name": "three-scenes",
+  "projectType": "library",
+  "tags": ["type:scene", "scope:shared"],
+  "targets": {
+    "lint": { "command": "eslint libs/three-scenes" },
+    "typecheck": {
+      "command": "tsc --noEmit -p libs/three-scenes/tsconfig.json"
+    }
+  }
+}

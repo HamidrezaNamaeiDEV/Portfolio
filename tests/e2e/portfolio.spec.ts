@@ -427,6 +427,7 @@ test('owner manages and publishes all three content areas through the mobile das
   await expect(
     publicPage.getByText('Browser-tested skill', { exact: true }),
   ).toBeVisible()
+  await page.bringToFront()
   await page
     .getByRole('button', { name: 'Work experience', exact: true })
     .click()
@@ -464,6 +465,7 @@ test('owner manages and publishes all three content areas through the mobile das
   await projectEditor.getByLabel('Publication status').selectOption('published')
   await projectEditor.getByRole('button', { name: 'Save project' }).click()
   await expect(page.getByText('Project saved.')).toBeVisible()
+  await publicPage.bringToFront()
   await publicPage.reload()
   await expect(
     publicPage.getByRole('heading', { name: 'Browser-tested company' }),
@@ -474,6 +476,7 @@ test('owner manages and publishes all three content areas through the mobile das
   ).toBeVisible()
   await expect(publicPage.getByText('Present', { exact: true })).toHaveCount(0)
 
+  await page.bringToFront()
   for (const [section, title, singular] of [
     ['Projects', 'Browser-tested project', 'project'],
     ['Work experience', 'Browser-tested company', 'experience'],
@@ -491,10 +494,12 @@ test('owner manages and publishes all three content areas through the mobile das
       page.getByRole('button', { name: `Edit ${title}`, exact: true }),
     ).toHaveCount(0)
   }
+  await publicPage.bringToFront()
   await publicPage.reload()
   await expect(
     publicPage.getByText('Browser-tested skill', { exact: true }),
   ).toHaveCount(0)
+  await page.bringToFront()
   await page.getByRole('button', { name: 'Sign out' }).click()
   await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible()
   expect(pageErrors).toEqual([])
@@ -680,7 +685,9 @@ test('bulk skill changes require explicit valid IDs and leave other seed records
   ).toBe(403)
   const contentResponse = await request.get(`${admin}/api/content`)
   const initial: AdminContent = await contentResponse.json()
-  const preservedSeedId = initial.skills[0]!.id
+  const preservedSeedId = initial.skills.find(({ id }) =>
+    id.startsWith('seed-skill-'),
+  )!.id
   const first = await save(request, 'skills', { name: 'Bulk test one' })
   const second = await save(request, 'skills', { name: 'Bulk test two' })
 
@@ -1228,5 +1235,117 @@ test('captures authenticated Phase 4 admin reference screenshots', async ({
   }
   await page.screenshot({
     path: `${screenshotDirectory}/technology-stack-mobile.png`,
+  })
+})
+
+test('public portfolio supports section history, keyboard details, and responsive layouts', async ({
+  page,
+  request,
+}) => {
+  await signIn(request)
+  const content: AdminContent = await (
+    await request.get(`${admin}/api/content`)
+  ).json()
+  for (const kind of [
+    'categories',
+    'proficiencies',
+    'experiences',
+    'projects',
+  ] as const) {
+    for (const record of content[kind].filter(({ id }) =>
+      id.startsWith('seed-'),
+    )) {
+      await save(
+        request,
+        kind,
+        { status: 'published', visible: true },
+        record.id,
+      )
+    }
+  }
+  const bulk = await request.post(`${admin}/api/content/bulk`, {
+    headers: origin,
+    data: {
+      ids: content.skills
+        .filter(({ id }) => id.startsWith('seed-'))
+        .map(({ id }) => id),
+      status: 'published',
+      visible: true,
+    },
+  })
+  expect(bulk.ok(), await bulk.text()).toBeTruthy()
+  const skill = await save(request, 'skills', {
+    name: 'Browser fixture technology',
+    categoryId: 'seed-category-frontend',
+    description: 'Component based web interfaces.',
+    status: 'published',
+  })
+  for (const project of content.projects.filter(
+    ({ name }) => name === 'URL Test Project',
+  )) {
+    await remove(request, 'projects', project.id)
+  }
+  expect((await request.get(`${web}/projects`)).status()).toBe(404)
+  const response = await request.get(web)
+  expect(await response.text()).toContain(`rel="canonical" href="${web}/"`)
+  expect(await (await request.get(`${web}/robots.txt`)).text()).toContain(
+    `${web}/sitemap.xml`,
+  )
+  expect(await (await request.get(`${web}/sitemap.xml`)).text()).toContain(
+    `<loc>${web}/</loc>`,
+  )
+  const directory = 'docs/screenshots/phase-5'
+  await mkdir(directory, { recursive: true })
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.goto(web)
+  await expect(page.locator('.gallery-poster img')).toHaveJSProperty(
+    'complete',
+    true,
+  )
+  const navigation = page.getByRole('navigation', {
+    name: 'Portfolio',
+    exact: true,
+  })
+  await page.getByRole('link', { name: 'Explore My Stack' }).click()
+  await expect(navigation.getByRole('link', { name: 'Stack' })).toHaveAttribute(
+    'aria-current',
+    'location',
+  )
+  await navigation.getByRole('link', { name: 'Experience' }).click()
+  await page.goBack()
+  await expect(page).toHaveURL(/#technology-stack$/)
+  await expect(navigation.getByRole('link', { name: 'Stack' })).toHaveAttribute(
+    'aria-current',
+    'location',
+  )
+  const disclosure = page
+    .locator('summary')
+    .filter({ hasText: 'Browser fixture technology' })
+  await disclosure.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByText('Component based web interfaces.')).toBeVisible()
+  expect(
+    await page
+      .locator('html')
+      .evaluate((node) => getComputedStyle(node).scrollBehavior),
+  ).toBe('auto')
+  await remove(request, 'skills', skill)
+  await page.goto(web)
+  await page.screenshot({
+    path: `${directory}/homepage-desktop.png`,
+    fullPage: true,
+  })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect
+    .poll(() =>
+      page
+        .locator('html')
+        .evaluate((root) => root.scrollWidth - root.clientWidth),
+    )
+    .toBe(0)
+  await page.screenshot({
+    path: `${directory}/homepage-mobile.png`,
+    fullPage: true,
   })
 })

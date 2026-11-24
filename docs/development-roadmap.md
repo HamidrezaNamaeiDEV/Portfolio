@@ -59,15 +59,24 @@ Skills and work experience lead the portfolio. Projects are a short selected lis
 
 ## Phase 5 — Public portfolio
 
-- [ ] Deliver homepage, project catalogue and details, skills, experience, about and contact with CMS reads. Add SSR filtering, canonical metadata, social images, robots/sitemap and published-only route behavior.
-- [ ] Match approved visual composition on desktop and define responsive crops and layouts. Deliver the poster and an accessible HTML gallery index before WebGL. Confirm project text, asset rights, actual experience status, contact methods, and locale conventions with the owner.
-- [ ] Verify served HTML, client hydration, HTTP status behavior, keyboard focus and navigation, 200% zoom, mobile layouts and the Persian calendar display tests.
+- [x] Deliver one SSR homepage with identity, stack, experience, selected projects, about and contact. Defer the project catalogue and detail pages to a future phase.
+- [x] Deliver the static corridor poster and HTML domain index. Review desktop and mobile browser screenshots.
+- [x] Verify served HTML, client hydration, HTTP status behavior, keyboard navigation, reduced motion, mobile layout, and Persian month display.
+- [ ] Confirm release asset rights, outstanding content approvals, and browser behavior at 200% zoom.
 
 ## Phase 6 — 3D experience
 
-- [ ] Prototype one corridor station in `libs/three-scenes` with production-like lighting and assets. Validate the initial transfer and frame budgets against poster-only comparisons and test cleanup on repeated navigation.
-- [ ] After the prototype gate, extend to all five stations and integrate CMS configuration. Verify desktop, touch and keyboard input, reduced motion, context loss and static fallback. Verify the mobile poster-first behavior and tune the opt-in renderer on a named physical device.
-- [ ] Review scene composition against the supplied visual and compare production traces. Keep the poster as the default on tiers that miss the performance gate.
+- [x] Document and build a one-station corridor in `libs/three-scenes`.
+  Measure desktop activation and rendering, exercise resource cleanup, and
+  capture the desktop scene and emulated mobile poster.
+- [x] Review and approve the Phase 6A prototype architecture and visual direction.
+- [x] Extend the desktop gallery to five stations with published CMS category links.
+  Verify keyboard navigation, reduced motion, context loss, the static poster
+  and an extended desktop rendering session.
+- [ ] Validate on a physical phone before enabling any mobile 3D tier.
+- [ ] Obtain explicit approval of Phase 6B before starting Phase 7.
+
+[Phase 6A baseline](phase-6-3d-gallery.md) · [Phase 6B implementation and results](phase-6b-gallery.md)
 
 ## Phase 7 — Production readiness
 
