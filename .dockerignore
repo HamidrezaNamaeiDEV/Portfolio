@@ -1,0 +1,17 @@
+**
+!package.json
+!package-lock.json
+!.npmrc
+!nx.json
+!tsconfig.base.json
+!apps/
+!apps/**
+!libs/
+!libs/**
+**/node_modules
+**/.nuxt
+**/.output
+**/.keystone
+**/generated
+**/.env
+**/.env.*

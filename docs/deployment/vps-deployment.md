@@ -1,5 +1,9 @@
 # Proposed VPS deployment
 
+The [Phase 7 runbook](../phase-7-deployment.md) is the current deployment
+reference. The object storage design below is an earlier proposal. The
+current application stores validated WebP in PostgreSQL.
+
 Use one Linux VPS with Docker Compose. Nginx terminates HTTPS and is the sole public ingress. It routes the public and admin hostnames to their respective Nuxt processes. Keep both CMS network paths internal and use a DB network only for Keystone and the necessary migration and backup jobs. PostgreSQL has no published port. The S3-compatible bucket is private and off-VPS for production. Use separate secrets, buckets or prefixes, and databases for staging and production.
 
 Pin application images and the PostgreSQL 18 image to immutable releases. The official 18 image uses `PGDATA=/var/lib/postgresql/18/docker`. Mount the persistent volume at `/var/lib/postgresql` and verify that data survives container replacement in staging. Use a database migration role separate from the runtime role. Keep secrets out of the image and build context. Measure CPU, memory and disk headroom for SSR, uploads and backups on the target architecture before release. [Official PostgreSQL 18 image](https://github.com/docker-library/postgres/blob/master/18/bookworm/Dockerfile)

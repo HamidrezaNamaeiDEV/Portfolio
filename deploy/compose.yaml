@@ -1,0 +1,84 @@
+x-runtime: &runtime
+  restart: unless-stopped
+  init: true
+  security_opt:
+    - no-new-privileges:true
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: '3'
+
+services:
+  web:
+    <<: *runtime
+    image: ${WEB_IMAGE:?Set WEB_IMAGE}
+    ports:
+      - '127.0.0.1:${WEB_BIND_PORT:-3000}:3000'
+    environment:
+      NUXT_CMS_URL: http://cms:3002
+      NUXT_PUBLIC_SITE_URL: ${PUBLIC_URL:?Set PUBLIC_URL}
+      NUXT_PUBLIC_ADMIN_URL: ${ADMIN_URL:?Set ADMIN_URL}
+    networks: [edge, application]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/api/portfolio').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  admin:
+    <<: *runtime
+    image: ${ADMIN_IMAGE:?Set ADMIN_IMAGE}
+    ports:
+      - '127.0.0.1:${ADMIN_BIND_PORT:-3001}:3001'
+    environment:
+      NUXT_CMS_URL: http://cms:3002
+      NUXT_ADMIN_ORIGIN: ${ADMIN_URL:?Set ADMIN_URL}
+    networks: [edge, application]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3001/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  cms:
+    <<: *runtime
+    image: ${CMS_IMAGE:?Set CMS_IMAGE}
+    environment:
+      CMS_DATABASE_URL: ${CMS_DATABASE_URL:?Set CMS_DATABASE_URL}
+      CMS_SESSION_SECRET: ${CMS_SESSION_SECRET:?Set CMS_SESSION_SECRET}
+    networks: [application, database]
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3002/api/graphql',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({query:'{publicPortfolio}'})}).then(r=>r.json()).then(r=>{if(!r.data?.publicPortfolio || r.errors)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  migrate:
+    image: ${CMS_IMAGE:?Set CMS_IMAGE}
+    profiles: [release]
+    command: [npm, run, 'migrate:deploy', -w, '@a/cms']
+    environment:
+      CMS_DATABASE_URL: ${MIGRATION_DATABASE_URL:-}
+    networks: [database]
+  db:
+    <<: *runtime
+    image: postgres:18-bookworm@sha256:00c8c7a0356f34e1a4c5f2fd40510457d4025564411605fc228ca194e5f7023a
+    environment:
+      POSTGRES_DB: portfolio
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    networks: [database]
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: [CMD, pg_isready, -h, 127.0.0.1, -U, postgres, -d, portfolio]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+networks:
+  edge: {}
+  application:
+    internal: true
+  database:
+    internal: true
+
+volumes:
+  postgres: {}

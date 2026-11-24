@@ -80,8 +80,10 @@ Skills and work experience lead the portfolio. Projects are a short selected lis
 
 ## Phase 7 — Production readiness
 
-- [ ] Complete CI and staging integration, security/SEO/performance review, Docker and Nginx configuration, HTTPS, health checks and observability.
-- [ ] Rehearse deploy, rollback and an isolated database and media restore from a paired off-host backup. Measure against the approved recovery targets and link the evidence.
-- [ ] Run Vitest, Playwright, post-deploy smoke checks, and repeatable mobile/desktop lab audits. Report field metrics once traffic is sufficient. Release after content, security, performance and recovery review.
+- [x] Audit the implementation and prepare Docker, Compose, Nginx, backup and restore templates.
+- [x] Rehearse an isolated PostgreSQL restore with published, draft and media fixtures.
+- [x] Verify local Compose health, migrations, TLS proxying, SSR, owner access and publishing.
+- [ ] Provision public staging and verify trusted HTTPS, renewal, staging workloads and off-host encrypted recovery.
+- [ ] Run security and performance checks on the target VPS. Release after owner approval.
 
-[Acceptance details and open decisions](architecture/system-overview.md) · [VPS proposal](deployment/vps-deployment.md)
+[Phase 7 audit and runbook](phase-7-deployment.md)
