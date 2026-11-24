@@ -1,53 +1,141 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import '@a/design-tokens'
+import './assets/admin.css'
+import { apiMessage } from './utils/api-errors'
 
-const detailsVisible = ref(false)
+interface Session {
+  owner: { email: string } | null
+}
+
+const {
+  data: session,
+  error,
+  refresh,
+  pending,
+} = await useFetch<Session>('/api/session', { key: 'admin-session' })
+const message = ref('')
+const signingOut = ref(false)
+
+function expire() {
+  session.value = { owner: null }
+  message.value = 'Your session expired. Sign in again to continue.'
+}
+
+function establishSession(owner: NonNullable<Session['owner']>) {
+  session.value = { owner }
+  message.value = ''
+}
+
+async function signOut() {
+  signingOut.value = true
+  message.value = ''
+  try {
+    await $fetch('/api/session', { method: 'DELETE' })
+    session.value = { owner: null }
+    message.value = 'Signed out.'
+  } catch (failure) {
+    message.value = apiMessage(failure, 'Could not sign out. Try again.')
+  } finally {
+    signingOut.value = false
+  }
+}
 </script>
 
 <template>
-  <main>
-    <h1>Portfolio administration</h1>
-    <p>Editorial workspace for portfolio content.</p>
-    <button
-      type="button"
-      aria-controls="foundation-details"
-      :aria-expanded="detailsVisible"
-      @click="detailsVisible = !detailsVisible"
-    >
-      {{
-        detailsVisible ? 'Hide foundation details' : 'Show foundation details'
-      }}
-    </button>
-    <p v-show="detailsVisible" id="foundation-details">
-      Admin rendering and client interaction are available.
+  <div v-if="session?.owner">
+    <header class="topbar">
+      <div class="topbar__inner">
+        <div class="identity">
+          <span class="mark" aria-hidden="true">A/</span>
+          <span>Portfolio administration</span>
+        </div>
+        <div class="account">
+          <span class="account__email">{{ session.owner.email }}</span>
+          <button
+            class="button"
+            type="button"
+            :disabled="signingOut"
+            @click="signOut"
+          >
+            {{ signingOut ? 'Signing out…' : 'Sign out' }}
+          </button>
+        </div>
+      </div>
+    </header>
+    <p v-if="message" class="session-error feedback" role="alert">
+      {{ message }}
     </p>
+    <ContentWorkspace @expired="expire" />
+  </div>
+  <main v-else-if="error" class="session-error">
+    <h1>Portfolio administration</h1>
+    <p class="feedback" role="alert">The sign-in service is unavailable.</p>
+    <button class="button" type="button" :disabled="pending" @click="refresh()">
+      Try again
+    </button>
   </main>
+  <OwnerSignIn v-else :message="message" @signed-in="establishSession" />
 </template>
 
-<style>
-body {
-  background: var(--a-color-surface);
-  color: var(--a-color-text);
-  font-family: var(--a-font-sans);
+<style scoped>
+.topbar {
+  background: var(--admin-panel);
+  border-block-end: 1px solid var(--admin-line);
 }
 
-main {
-  max-inline-size: 42rem;
+.topbar__inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--a-space-4);
+  max-inline-size: var(--admin-max);
+  min-block-size: 4.25rem;
+  margin-inline: auto;
+  padding: var(--a-space-2) clamp(1rem, 3vw, 2rem);
+}
+
+.identity,
+.account {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.identity {
+  font-weight: 680;
+  line-height: 1.2;
+}
+
+.mark {
+  min-inline-size: 2rem;
+  color: var(--a-color-accent);
+  font-family: var(--a-font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.account {
+  flex: 0 0 auto;
+}
+
+.account__email {
+  color: var(--a-color-muted);
+  font-size: 0.875rem;
+}
+
+.session-error {
+  display: grid;
+  justify-items: start;
+  gap: 0.875rem;
+  max-inline-size: 35rem;
   margin: var(--a-space-16) auto;
   padding-inline: var(--a-space-4);
 }
 
-h1 {
-  font-family: var(--a-font-display);
-}
-
-p {
-  color: var(--a-color-muted);
-}
-
-button:focus-visible {
-  outline: 2px solid var(--a-color-accent);
-  outline-offset: 3px;
+@media (max-width: 38rem) {
+  .account__email {
+    display: none;
+  }
 }
 </style>

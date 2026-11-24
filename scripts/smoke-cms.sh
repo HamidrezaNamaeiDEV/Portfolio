@@ -61,9 +61,15 @@ tar --exclude=node_modules --exclude=.nuxt --exclude=.output --exclude=.keystone
   --exclude=generated --exclude=.env --exclude='.env.*' \
   -cf - package.json package-lock.json .npmrc tsconfig.base.json apps libs \
   | docker exec -i "$runner" tar -C /work -xf -
-run npm ci --no-audit --no-fund
+if [[ -n "${NODE_EXTRA_CA_CERTS:-}" ]]; then
+  docker cp "$NODE_EXTRA_CA_CERTS" "$runner:/tmp/npm-ca.pem"
+  run env NODE_EXTRA_CA_CERTS=/tmp/npm-ca.pem npm ci --no-audit --no-fund
+else
+  run npm ci --no-audit --no-fund
+fi
 run npm run check:schema -w @a/cms
 
+export CMS_SESSION_SECRET=$(openssl rand -hex 32)
 export CMS_DATABASE_URL="postgresql://foundation:${db_password}@postgres:5432/foundation"
 
 cms() {
@@ -72,7 +78,7 @@ cms() {
 
 cms npm run migrate:deploy
 cms node tests/database-smoke.ts write
-docker exec -d --env CMS_DATABASE_URL --workdir /work/apps/cms "$runner" \
+docker exec -d --env CMS_DATABASE_URL --env CMS_SESSION_SECRET --workdir /work/apps/cms "$runner" \
   sh -c 'exec npm run start > /tmp/keystone.log 2>&1'
 cms node tests/http-smoke.ts
 

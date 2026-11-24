@@ -6,13 +6,17 @@
     "build": "keystone build --no-ui",
     "check:schema": "keystone build --no-ui --frozen",
     "start": "keystone start --no-ui",
-    "migrate:deploy": "prisma migrate deploy"
+    "migrate:deploy": "prisma migrate deploy",
+    "seed:content": "node scripts/seed-content.ts",
+    "owner:create": "node scripts/create-owner.ts"
   },
   "dependencies": {
+    "@keystone-6/auth": "10.0.6",
     "@keystone-6/core": "8.3.0",
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",
-    "pg": "8.23.1"
+    "pg": "8.23.1",
+    "sharp": "0.35.5"
   },
   "devDependencies": {
     "prisma": "7.10.1"

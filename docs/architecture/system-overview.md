@@ -1,5 +1,7 @@
 # Phase 1 architecture assessment
 
+**Phase 3 implementation.** The content foundation uses the [current models and API boundaries](../phase-3-content-management.md). The design below records the earlier proposal for broader product scope.
+
 **Review date** 24 November 2026  
 **Status** Baseline reviewed in Phase 1.5. Owner approval is pending.
 

@@ -42,11 +42,11 @@ export default [
           depConstraints: [
             {
               sourceTag: 'scope:web',
-              onlyDependOnLibsWithTags: ['type:tokens'],
+              onlyDependOnLibsWithTags: ['type:tokens', 'type:contracts'],
             },
             {
               sourceTag: 'scope:admin',
-              onlyDependOnLibsWithTags: ['type:tokens'],
+              onlyDependOnLibsWithTags: ['type:tokens', 'type:contracts'],
             },
             { sourceTag: 'scope:cms', onlyDependOnLibsWithTags: [] },
             { sourceTag: 'scope:shared', onlyDependOnLibsWithTags: [] },

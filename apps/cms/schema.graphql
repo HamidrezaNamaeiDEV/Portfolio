@@ -92,6 +92,520 @@ input FoundationProbeCreateInput {
   value: String
 }
 
+type User {
+  id: ID!
+  email: String
+  password: PasswordState
+  isOwner: Boolean
+}
+
+type PasswordState {
+  isSet: Boolean!
+}
+
+input UserWhereUniqueInput {
+  id: ID
+  email: String
+}
+
+input UserWhereInput {
+  AND: [UserWhereInput!]
+  OR: [UserWhereInput!]
+  NOT: [UserWhereInput!]
+  id: IDFilter
+  email: StringFilter
+  isOwner: BooleanFilter
+}
+
+input BooleanFilter {
+  equals: Boolean
+  not: BooleanFilter
+}
+
+input UserOrderByInput {
+  id: OrderDirection
+  email: OrderDirection
+  isOwner: OrderDirection
+}
+
+type SkillCategory {
+  id: ID!
+  name: String
+  description: String
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input SkillCategoryWhereUniqueInput {
+  id: ID
+  name: String
+}
+
+input SkillCategoryWhereInput {
+  AND: [SkillCategoryWhereInput!]
+  OR: [SkillCategoryWhereInput!]
+  NOT: [SkillCategoryWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  description: StringFilter
+  sortOrder: IntFilter
+  status: StringFilter
+  visible: BooleanFilter
+}
+
+input IntFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntFilter
+}
+
+input SkillCategoryOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  description: OrderDirection
+  sortOrder: OrderDirection
+  status: OrderDirection
+  visible: OrderDirection
+}
+
+input SkillCategoryUpdateInput {
+  name: String
+  description: String
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input SkillCategoryUpdateArgs {
+  where: SkillCategoryWhereUniqueInput!
+  data: SkillCategoryUpdateInput!
+}
+
+input SkillCategoryCreateInput {
+  name: String
+  description: String
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+type Proficiency {
+  id: ID!
+  name: String
+  description: String
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input ProficiencyWhereUniqueInput {
+  id: ID
+  name: String
+}
+
+input ProficiencyWhereInput {
+  AND: [ProficiencyWhereInput!]
+  OR: [ProficiencyWhereInput!]
+  NOT: [ProficiencyWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  description: StringFilter
+  sortOrder: IntFilter
+  status: StringFilter
+  visible: BooleanFilter
+}
+
+input ProficiencyOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  description: OrderDirection
+  sortOrder: OrderDirection
+  status: OrderDirection
+  visible: OrderDirection
+}
+
+input ProficiencyUpdateInput {
+  name: String
+  description: String
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input ProficiencyUpdateArgs {
+  where: ProficiencyWhereUniqueInput!
+  data: ProficiencyUpdateInput!
+}
+
+input ProficiencyCreateInput {
+  name: String
+  description: String
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+type Skill {
+  id: ID!
+  name: String
+  description: String
+  category: SkillCategory
+  proficiency: Proficiency
+  projects(where: ProjectWhereInput! = {}, orderBy: [ProjectOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ProjectWhereUniqueInput): [Project!]
+  projectsCount(where: ProjectWhereInput! = {}): Int
+  experiences(where: ExperienceWhereInput! = {}, orderBy: [ExperienceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ExperienceWhereUniqueInput): [Experience!]
+  experiencesCount(where: ExperienceWhereInput! = {}): Int
+  logo: String
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input SkillWhereUniqueInput {
+  id: ID
+  name: String
+}
+
+input SkillWhereInput {
+  AND: [SkillWhereInput!]
+  OR: [SkillWhereInput!]
+  NOT: [SkillWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  description: StringFilter
+  category: SkillCategoryWhereInput
+  proficiency: ProficiencyWhereInput
+  projects: ProjectManyRelationFilter
+  experiences: ExperienceManyRelationFilter
+  logo: StringFilter
+  sortOrder: IntFilter
+  status: StringFilter
+  visible: BooleanFilter
+}
+
+input ProjectManyRelationFilter {
+  every: ProjectWhereInput
+  some: ProjectWhereInput
+  none: ProjectWhereInput
+}
+
+input ExperienceManyRelationFilter {
+  every: ExperienceWhereInput
+  some: ExperienceWhereInput
+  none: ExperienceWhereInput
+}
+
+input SkillOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  description: OrderDirection
+  logo: OrderDirection
+  sortOrder: OrderDirection
+  status: OrderDirection
+  visible: OrderDirection
+}
+
+input SkillUpdateInput {
+  name: String
+  description: String
+  category: SkillCategoryRelateToOneForUpdateInput
+  proficiency: ProficiencyRelateToOneForUpdateInput
+  projects: ProjectRelateToManyForUpdateInput
+  experiences: ExperienceRelateToManyForUpdateInput
+  logo: String
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input SkillCategoryRelateToOneForUpdateInput {
+  create: SkillCategoryCreateInput
+  connect: SkillCategoryWhereUniqueInput
+  disconnect: Boolean
+}
+
+input ProficiencyRelateToOneForUpdateInput {
+  create: ProficiencyCreateInput
+  connect: ProficiencyWhereUniqueInput
+  disconnect: Boolean
+}
+
+input ProjectRelateToManyForUpdateInput {
+  disconnect: [ProjectWhereUniqueInput!]
+  set: [ProjectWhereUniqueInput!]
+  create: [ProjectCreateInput!]
+  connect: [ProjectWhereUniqueInput!]
+}
+
+input ExperienceRelateToManyForUpdateInput {
+  disconnect: [ExperienceWhereUniqueInput!]
+  set: [ExperienceWhereUniqueInput!]
+  create: [ExperienceCreateInput!]
+  connect: [ExperienceWhereUniqueInput!]
+}
+
+input SkillUpdateArgs {
+  where: SkillWhereUniqueInput!
+  data: SkillUpdateInput!
+}
+
+input SkillCreateInput {
+  name: String
+  description: String
+  category: SkillCategoryRelateToOneForCreateInput
+  proficiency: ProficiencyRelateToOneForCreateInput
+  projects: ProjectRelateToManyForCreateInput
+  experiences: ExperienceRelateToManyForCreateInput
+  logo: String
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input SkillCategoryRelateToOneForCreateInput {
+  create: SkillCategoryCreateInput
+  connect: SkillCategoryWhereUniqueInput
+}
+
+input ProficiencyRelateToOneForCreateInput {
+  create: ProficiencyCreateInput
+  connect: ProficiencyWhereUniqueInput
+}
+
+input ProjectRelateToManyForCreateInput {
+  create: [ProjectCreateInput!]
+  connect: [ProjectWhereUniqueInput!]
+  set: [ProjectWhereUniqueInput!]
+}
+
+input ExperienceRelateToManyForCreateInput {
+  create: [ExperienceCreateInput!]
+  connect: [ExperienceWhereUniqueInput!]
+  set: [ExperienceWhereUniqueInput!]
+}
+
+type Experience {
+  id: ID!
+  company: String
+  position: String
+  startYear: Int
+  startMonth: Int
+  endYear: Int
+  endMonth: Int
+  employmentStatus: String
+  description: String
+  responsibilities: String
+  achievements: String
+  skills(where: SkillWhereInput! = {}, orderBy: [SkillOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SkillWhereUniqueInput): [Skill!]
+  skillsCount(where: SkillWhereInput! = {}): Int
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input ExperienceWhereUniqueInput {
+  id: ID
+}
+
+input ExperienceWhereInput {
+  AND: [ExperienceWhereInput!]
+  OR: [ExperienceWhereInput!]
+  NOT: [ExperienceWhereInput!]
+  id: IDFilter
+  company: StringFilter
+  position: StringFilter
+  startYear: IntFilter
+  startMonth: IntFilter
+  endYear: IntNullableFilter
+  endMonth: IntNullableFilter
+  employmentStatus: StringNullableFilter
+  description: StringFilter
+  responsibilities: StringFilter
+  achievements: StringFilter
+  skills: SkillManyRelationFilter
+  sortOrder: IntFilter
+  status: StringFilter
+  visible: BooleanFilter
+}
+
+input IntNullableFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntNullableFilter
+}
+
+input StringNullableFilter {
+  equals: String
+  in: [String!]
+  notIn: [String!]
+  lt: String
+  lte: String
+  gt: String
+  gte: String
+  contains: String
+  startsWith: String
+  endsWith: String
+  mode: QueryMode
+  not: StringNullableFilter
+}
+
+input SkillManyRelationFilter {
+  every: SkillWhereInput
+  some: SkillWhereInput
+  none: SkillWhereInput
+}
+
+input ExperienceOrderByInput {
+  id: OrderDirection
+  company: OrderDirection
+  position: OrderDirection
+  startYear: OrderDirection
+  startMonth: OrderDirection
+  endYear: OrderDirection
+  endMonth: OrderDirection
+  employmentStatus: OrderDirection
+  description: OrderDirection
+  responsibilities: OrderDirection
+  achievements: OrderDirection
+  sortOrder: OrderDirection
+  status: OrderDirection
+  visible: OrderDirection
+}
+
+input ExperienceUpdateInput {
+  company: String
+  position: String
+  startYear: Int
+  startMonth: Int
+  endYear: Int
+  endMonth: Int
+  employmentStatus: String
+  description: String
+  responsibilities: String
+  achievements: String
+  skills: SkillRelateToManyForUpdateInput
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input SkillRelateToManyForUpdateInput {
+  disconnect: [SkillWhereUniqueInput!]
+  set: [SkillWhereUniqueInput!]
+  create: [SkillCreateInput!]
+  connect: [SkillWhereUniqueInput!]
+}
+
+input ExperienceUpdateArgs {
+  where: ExperienceWhereUniqueInput!
+  data: ExperienceUpdateInput!
+}
+
+input ExperienceCreateInput {
+  company: String
+  position: String
+  startYear: Int
+  startMonth: Int
+  endYear: Int
+  endMonth: Int
+  employmentStatus: String
+  description: String
+  responsibilities: String
+  achievements: String
+  skills: SkillRelateToManyForCreateInput
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input SkillRelateToManyForCreateInput {
+  create: [SkillCreateInput!]
+  connect: [SkillWhereUniqueInput!]
+  set: [SkillWhereUniqueInput!]
+}
+
+type Project {
+  id: ID!
+  name: String
+  slug: String
+  description: String
+  cover: String
+  skills(where: SkillWhereInput! = {}, orderBy: [SkillOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SkillWhereUniqueInput): [Skill!]
+  skillsCount(where: SkillWhereInput! = {}): Int
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input ProjectWhereUniqueInput {
+  id: ID
+  slug: String
+}
+
+input ProjectWhereInput {
+  AND: [ProjectWhereInput!]
+  OR: [ProjectWhereInput!]
+  NOT: [ProjectWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  slug: StringFilter
+  description: StringFilter
+  cover: StringFilter
+  skills: SkillManyRelationFilter
+  sortOrder: IntFilter
+  status: StringFilter
+  visible: BooleanFilter
+}
+
+input ProjectOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  slug: OrderDirection
+  description: OrderDirection
+  cover: OrderDirection
+  sortOrder: OrderDirection
+  status: OrderDirection
+  visible: OrderDirection
+}
+
+input ProjectUpdateInput {
+  name: String
+  slug: String
+  description: String
+  cover: String
+  skills: SkillRelateToManyForUpdateInput
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input ProjectUpdateArgs {
+  where: ProjectWhereUniqueInput!
+  data: ProjectUpdateInput!
+}
+
+input ProjectCreateInput {
+  name: String
+  slug: String
+  description: String
+  cover: String
+  skills: SkillRelateToManyForCreateInput
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -104,13 +618,77 @@ type Mutation {
   updateFoundationProbes(data: [FoundationProbeUpdateArgs!]!): [FoundationProbe]
   deleteFoundationProbe(where: FoundationProbeWhereUniqueInput!): FoundationProbe
   deleteFoundationProbes(where: [FoundationProbeWhereUniqueInput!]!): [FoundationProbe]
+  createSkillCategory(data: SkillCategoryCreateInput!): SkillCategory
+  createSkillCategories(data: [SkillCategoryCreateInput!]!): [SkillCategory]
+  updateSkillCategory(where: SkillCategoryWhereUniqueInput!, data: SkillCategoryUpdateInput!): SkillCategory
+  updateSkillCategories(data: [SkillCategoryUpdateArgs!]!): [SkillCategory]
+  deleteSkillCategory(where: SkillCategoryWhereUniqueInput!): SkillCategory
+  deleteSkillCategories(where: [SkillCategoryWhereUniqueInput!]!): [SkillCategory]
+  createProficiency(data: ProficiencyCreateInput!): Proficiency
+  createProficiencies(data: [ProficiencyCreateInput!]!): [Proficiency]
+  updateProficiency(where: ProficiencyWhereUniqueInput!, data: ProficiencyUpdateInput!): Proficiency
+  updateProficiencies(data: [ProficiencyUpdateArgs!]!): [Proficiency]
+  deleteProficiency(where: ProficiencyWhereUniqueInput!): Proficiency
+  deleteProficiencies(where: [ProficiencyWhereUniqueInput!]!): [Proficiency]
+  createSkill(data: SkillCreateInput!): Skill
+  createSkills(data: [SkillCreateInput!]!): [Skill]
+  updateSkill(where: SkillWhereUniqueInput!, data: SkillUpdateInput!): Skill
+  updateSkills(data: [SkillUpdateArgs!]!): [Skill]
+  deleteSkill(where: SkillWhereUniqueInput!): Skill
+  deleteSkills(where: [SkillWhereUniqueInput!]!): [Skill]
+  createExperience(data: ExperienceCreateInput!): Experience
+  createExperiences(data: [ExperienceCreateInput!]!): [Experience]
+  updateExperience(where: ExperienceWhereUniqueInput!, data: ExperienceUpdateInput!): Experience
+  updateExperiences(data: [ExperienceUpdateArgs!]!): [Experience]
+  deleteExperience(where: ExperienceWhereUniqueInput!): Experience
+  deleteExperiences(where: [ExperienceWhereUniqueInput!]!): [Experience]
+  createProject(data: ProjectCreateInput!): Project
+  createProjects(data: [ProjectCreateInput!]!): [Project]
+  updateProject(where: ProjectWhereUniqueInput!, data: ProjectUpdateInput!): Project
+  updateProjects(data: [ProjectUpdateArgs!]!): [Project]
+  deleteProject(where: ProjectWhereUniqueInput!): Project
+  deleteProjects(where: [ProjectWhereUniqueInput!]!): [Project]
+  endSession: Boolean!
+  authenticateUserWithPassword(email: String!, password: String!): UserAuthenticationWithPasswordResult
+}
+
+union UserAuthenticationWithPasswordResult = UserAuthenticationWithPasswordSuccess | UserAuthenticationWithPasswordFailure
+
+type UserAuthenticationWithPasswordSuccess {
+  sessionToken: String!
+  item: User!
+}
+
+type UserAuthenticationWithPasswordFailure {
+  message: String!
 }
 
 type Query {
   foundationProbe(where: FoundationProbeWhereUniqueInput!): FoundationProbe
   foundationProbes(where: FoundationProbeWhereInput! = {}, orderBy: [FoundationProbeOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: FoundationProbeWhereUniqueInput): [FoundationProbe!]
   foundationProbesCount(where: FoundationProbeWhereInput! = {}): Int
+  user(where: UserWhereUniqueInput!): User
+  users(where: UserWhereInput! = {}, orderBy: [UserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserWhereUniqueInput): [User!]
+  usersCount(where: UserWhereInput! = {}): Int
+  skillCategory(where: SkillCategoryWhereUniqueInput!): SkillCategory
+  skillCategories(where: SkillCategoryWhereInput! = {}, orderBy: [SkillCategoryOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SkillCategoryWhereUniqueInput): [SkillCategory!]
+  skillCategoriesCount(where: SkillCategoryWhereInput! = {}): Int
+  proficiency(where: ProficiencyWhereUniqueInput!): Proficiency
+  proficiencies(where: ProficiencyWhereInput! = {}, orderBy: [ProficiencyOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ProficiencyWhereUniqueInput): [Proficiency!]
+  proficienciesCount(where: ProficiencyWhereInput! = {}): Int
+  skill(where: SkillWhereUniqueInput!): Skill
+  skills(where: SkillWhereInput! = {}, orderBy: [SkillOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SkillWhereUniqueInput): [Skill!]
+  skillsCount(where: SkillWhereInput! = {}): Int
+  experience(where: ExperienceWhereUniqueInput!): Experience
+  experiences(where: ExperienceWhereInput! = {}, orderBy: [ExperienceOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ExperienceWhereUniqueInput): [Experience!]
+  experiencesCount(where: ExperienceWhereInput! = {}): Int
+  project(where: ProjectWhereUniqueInput!): Project
+  projects(where: ProjectWhereInput! = {}, orderBy: [ProjectOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ProjectWhereUniqueInput): [Project!]
+  projectsCount(where: ProjectWhereInput! = {}): Int
   keystone: KeystoneMeta!
+  authenticatedItem: User
+  publicPortfolio: JSON!
+  publicImage(kind: String!, id: ID!): String
 }
 
 type KeystoneMeta {

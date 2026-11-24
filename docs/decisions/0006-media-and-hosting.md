@@ -3,6 +3,8 @@
 **Status** Recommended after Phase 1.5, owner approval pending  
 **Date** 24 November 2026
 
+Phase 3 uses the smaller workflow recorded in [ADR 0007](0007-portfolio-content-foundation.md). This document preserves the earlier design for future work.
+
 Drafts can reference uploaded media. Production is intended to run on a Linux VPS with Nginx, Docker and durable storage.
 
 Keep all uploaded objects private in S3-compatible storage. Publish only media references attached to live content and deliver through a narrow read path. Keep PostgreSQL private and operate the applications with Docker Compose behind Nginx. Use paired off-host database and media backups and rehearsal of an isolated restore. Pin PostgreSQL 18 and use its image's data mount and PostgreSQL 18 dump and restore tools.

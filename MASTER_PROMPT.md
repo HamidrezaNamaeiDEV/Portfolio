@@ -680,24 +680,15 @@ Create or refine:
 - Testing setup
 - Environment configuration
 
-### Phase 3 — CMS and Database
+### Phase 3 — Portfolio Content Management Foundation
 
-Implement:
+Technology stack and work experience are the primary content areas. Projects are a concise selected list with name, slug, optional summary and cover, related technologies, visibility, and ordering.
 
-- Keystone configuration
-- PostgreSQL connection
-- Data models
-- Relationships
-- Authentication
-- Authorization
-- Public content API
-- Seed data
+Deliver the data models, migrations, owner authentication and authorization, source seed, dashboard management, and public SSR sections for these three areas. Support draft/published status and CRUD, including editable skill categories and proficiency levels. Add automated tests across the database, API, and public rendering. See [the Phase 3 delivery notes](docs/phase-3-content-management.md).
 
-### Phase 4 — Admin Dashboard
+### Phase 4 — Admin Dashboard Expansion
 
-Implement the complete management experience.
-
-Validate CRUD operations against the real backend.
+Obtain explicit approval before extending the foundation to additional management workflows.
 
 ### Phase 5 — Public Portfolio
 

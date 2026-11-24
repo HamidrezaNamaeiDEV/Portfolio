@@ -15,3 +15,91 @@ model FoundationProbe {
   marker String @unique @default("")
   value  String @default("")
 }
+
+model User {
+  id                         String             @id @default(cuid())
+  email                      String             @unique @default("")
+  password                   String
+  isOwner                    Boolean            @default(false)
+  from_EditorialSession_user EditorialSession[] @relation("EditorialSession_user")
+}
+
+model EditorialSession {
+  id        String   @id @default(cuid())
+  keyHash   String   @unique @default("")
+  user      User?    @relation("EditorialSession_user", fields: [userId], references: [id])
+  userId    String?  @map("user")
+  expiresAt DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model SkillCategory {
+  id                  String  @id @default(cuid())
+  name                String  @unique @default("")
+  description         String  @default("")
+  sortOrder           Int     @default(0)
+  status              String  @default("draft")
+  visible             Boolean @default(true)
+  from_Skill_category Skill[] @relation("Skill_category")
+}
+
+model Proficiency {
+  id                     String  @id @default(cuid())
+  name                   String  @unique @default("")
+  description            String  @default("")
+  sortOrder              Int     @default(0)
+  status                 String  @default("draft")
+  visible                Boolean @default(true)
+  from_Skill_proficiency Skill[] @relation("Skill_proficiency")
+}
+
+model Skill {
+  id            String         @id @default(cuid())
+  name          String         @unique @default("")
+  description   String         @default("")
+  category      SkillCategory? @relation("Skill_category", fields: [categoryId], references: [id])
+  categoryId    String?        @map("category")
+  proficiency   Proficiency?   @relation("Skill_proficiency", fields: [proficiencyId], references: [id])
+  proficiencyId String?        @map("proficiency")
+  projects      Project[]      @relation("Project_skills")
+  experiences   Experience[]   @relation("Experience_skills")
+  logo          String         @default("")
+  sortOrder     Int            @default(0)
+  status        String         @default("draft")
+  visible       Boolean        @default(true)
+
+  @@index([categoryId])
+  @@index([proficiencyId])
+}
+
+model Experience {
+  id               String  @id @default(cuid())
+  company          String  @default("")
+  position         String  @default("")
+  startYear        Int
+  startMonth       Int
+  endYear          Int?
+  endMonth         Int?
+  employmentStatus String?
+  description      String  @default("")
+  responsibilities String  @default("")
+  achievements     String  @default("")
+  skills           Skill[] @relation("Experience_skills")
+  sortOrder        Int     @default(0)
+  status           String  @default("draft")
+  visible          Boolean @default(true)
+}
+
+model Project {
+  id          String  @id @default(cuid())
+  name        String  @default("")
+  slug        String  @unique @default("")
+  description String  @default("")
+  cover       String  @default("")
+  skills      Skill[] @relation("Project_skills")
+  sortOrder   Int     @default(0)
+  status      String  @default("draft")
+  visible     Boolean @default(true)
+}

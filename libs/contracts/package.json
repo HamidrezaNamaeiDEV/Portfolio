@@ -1,0 +1,6 @@
+{
+  "name": "@a/contracts",
+  "private": true,
+  "type": "module",
+  "exports": "./index.ts"
+}

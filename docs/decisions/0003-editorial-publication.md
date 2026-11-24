@@ -3,6 +3,8 @@
 **Status** Recommended after Phase 1.5, owner approval pending  
 **Date** 24 November 2026
 
+Phase 3 uses the smaller workflow recorded in [ADR 0007](0007-portfolio-content-foundation.md). This document preserves the earlier design for future work.
+
 The editor needs to revise a live case study, including its related media, without exposing incomplete work. Revision history and audit records have separate purposes.
 
 Maintain normalized editable aggregates and versioned immutable snapshots. Publish by advancing a revision pointer in the same transaction that updates media delivery permissions and appends the audit record. Use separate draft and publication versions to reject stale edits and delayed publication commands. Restore a revision as a new draft. Keep hard deletion and revision purging outside the initial workflow.

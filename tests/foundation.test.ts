@@ -1,19 +1,10 @@
-import { renderToString } from '@vue/server-renderer'
-import { createSSRApp } from 'vue'
 import { expect, test } from 'vitest'
-import Web from '../apps/web/app/app.vue'
-import Admin from '../apps/admin/app/app.vue'
+import { formatPersianMonth, persianMonths } from '@a/contracts'
 
-test('public shell presents the portfolio heading in SSR', async () => {
-  const html = await renderToString(createSSRApp(Web))
-
-  expect(html).toContain('<h1>A/ Engineering Portfolio</h1>')
-  expect(html).toContain('A portfolio of software engineering work')
-})
-
-test('admin shell identifies the editorial workspace in SSR', async () => {
-  const html = await renderToString(createSSRApp(Admin))
-
-  expect(html).toContain('<h1>Portfolio administration</h1>')
-  expect(html).toContain('Editorial workspace for portfolio content')
+test('formats Persian employment months at the exact granularity supplied', () => {
+  expect(formatPersianMonth(1404, 11)).toBe('Bahman 1404')
+  expect(formatPersianMonth(1404, 3)).toBe('Khordad 1404')
+  expect(formatPersianMonth(1404, 12)).toBe('Esfand 1404')
+  expect(formatPersianMonth(1405, 1)).toBe('Farvardin 1405')
+  expect(persianMonths).toHaveLength(12)
 })

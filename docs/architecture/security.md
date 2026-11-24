@@ -1,5 +1,7 @@
 # Proposed security architecture
 
+**Phase 3 implementation.** The content foundation uses the [current models and API boundaries](../phase-3-content-management.md). The design below records the earlier proposal for broader product scope.
+
 Only Nginx serves public traffic. Trust proxy headers only from that configured edge and overwrite caller-supplied forwarding headers. The public host routes to Nuxt web. The separate admin host routes to Nuxt admin on its own origin. Keystone, PostgreSQL and storage credentials stay behind the deployment boundary. A private network gives defense in depth. Keystone still checks authorization for protected operations.
 
 ## Sessions and API access

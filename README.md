@@ -1,10 +1,10 @@
 # A/ — Engineering Portfolio
 
-A public engineering portfolio with an interactive architectural gallery and a private CMS-backed administration dashboard.
+A professional engineering portfolio with a public technology stack, work history, selected projects, and a private CMS dashboard.
 
-The Foundation includes two minimal Nuxt SSR shells, a Keystone server with its native Admin UI disabled, and shared CSS design tokens. The CMS schema contains a disposable test fixture.
+The admin manages the content that appears on the public site. See the [Phase 3 setup and content workflow](docs/phase-3-content-management.md).
 
-## Run Foundation checks
+## Run workspace checks
 
 Use Node 24.22.3 with npm 11.19.1. The workspace pins both versions. Docker is required for the isolated CMS check.
 
@@ -23,7 +23,7 @@ npm run test:e2e
 npm run test:cms
 ```
 
-The CMS smoke command creates a fresh PostgreSQL instance and a Linux Node container, then removes those resources. It takes no database connection settings from the shell or local environment files. See the [Foundation report](docs/phase-2-foundation.md) for the graph, verification results, and recovery procedure.
+Build before running Playwright. The browser test command starts a disposable PostgreSQL 18 instance and the three built apps. The CMS smoke command creates a fresh PostgreSQL instance and a Linux Node container, then removes those resources. It takes no database connection settings from the shell or local environment files. If your workstation requires a private registry CA, set `NODE_EXTRA_CA_CERTS` to the approved PEM file for the smoke command. See the [Foundation report](docs/phase-2-foundation.md) for the graph, verification results, and recovery procedure.
 
 ## Project documentation
 

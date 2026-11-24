@@ -1,0 +1,11 @@
+{
+  "name": "contracts",
+  "projectType": "library",
+  "tags": ["type:contracts", "scope:shared"],
+  "targets": {
+    "lint": { "command": "eslint libs/contracts" },
+    "typecheck": {
+      "command": "tsc --noEmit --strict --skipLibCheck --target ES2023 libs/contracts/index.ts"
+    }
+  }
+}

@@ -37,20 +37,22 @@ Phase 2 Foundation is implemented and verified. The sequence below follows the p
 
 Use the existing directory contents as the preservation baseline. Configure local Nx caching for reproducible targets. Remote caching, production services and product data migrations have no Foundation dependency. [Nx workspace options](https://nx.dev/docs/reference/create-nx-workspace) · [Nx module boundaries](https://nx.dev/docs/features/enforce-module-boundaries)
 
-## Phase 3 — CMS and database
+## Phase 3 — Portfolio Content Management Foundation
 
-- [ ] Obtain owner approval to start Phase 3.
+Skills and work experience lead the portfolio. Projects are a short selected list.
 
-- [ ] Start with the [Project vertical slice](architecture/data-model.md#project-vertical-slice-acceptance) using one project, one skill/category and private image media. Review initial PostgreSQL migrations and seed only confirmed content as draft. Verify constraints and seed idempotency.
-- [ ] Add Keystone owner authentication and backend permissions. Define allowlisted public GraphQL operations for home, project listing/detail, skills, experience, profile/contact and gallery configuration. Add typed request and response contracts and projection tests.
-- [ ] Pass the Project slice checks for draft isolation, live filter/order, stale commands, atomic rollback, media races, and authorization before expanding to experience, site settings and scene configuration.
-- [ ] Integrate private S3-compatible media validation, replacement and publishing. Use a disposable database and staging bucket or equivalent private endpoint in integration tests. Reapply migrations from an empty database and check generated schema drift.
+- Add owner authentication, fixed admin and public APIs, PostgreSQL content models, relationships and migrations.
+- Seed the supplied skills and proficiency levels, two experience records at Persian month precision, and three project names as drafts.
+- Deliver admin CRUD, ordering, validation, publication, and visibility for skills, categories, proficiency levels, experience, and basic projects.
+- Render the three CMS sections on the public homepage. Prove CRUD, authorization, draft isolation, relationship filtering, and public SSR against disposable PostgreSQL.
+- Keep case studies, revision history, galleries, and broader admin modules out of this delivery.
 
-## Phase 4 — Admin dashboard
+[Phase 3 implementation and checks](phase-3-content-management.md) · [Publication and media decision](decisions/0007-portfolio-content-foundation.md)
 
-- [ ] Build owner sign-in, guard/session handling, overview and the project editor. Prove case-study blocks, linked technologies, cover/gallery ordering, validation, preview and publication against real Keystone.
-- [ ] Add skills and categories, experience, media library, profile, 3D settings, SEO, site settings and revision screens. Cover archive, unpublished changes, edit conflicts and error recovery.
-- [ ] Require Playwright evidence for sign-in/out, creation and editing, archive, restore, two-tab edit conflict, safe uploads and draft preview isolation. Verify the editor at narrow and wide viewports and with keyboard navigation.
+## Phase 4 — Admin dashboard expansion
+
+- [ ] Obtain explicit owner approval before starting Phase 4 and confirm the next management modules.
+- [ ] Extend the existing admin only for approved workflows. Reassess private preview, revision history, and a dedicated media library against editorial needs.
 
 ## Phase 5 — Public portfolio
 

@@ -17,7 +17,7 @@
     "build": "nx run-many -t build",
     "format:check": "prettier --check .",
     "test": "nx run-many -t prepare --projects=web,admin && vitest run",
-    "test:e2e": "playwright test",
+    "test:e2e": "bash scripts/test-portfolio.sh",
     "test:cms": "bash scripts/smoke-cms.sh"
   },
   "devDependencies": {

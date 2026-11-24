@@ -10,13 +10,16 @@ function source(specifier: string) {
 <template><main>Boundary fixture</main></template>`
 }
 
-test('allows a design-token import in a Vue SFC', async () => {
-  const [result] = await eslint.lintText(source('@a/design-tokens'), {
-    filePath: filename,
-  })
+test.each(['@a/design-tokens', '@a/contracts'])(
+  'allows Vue SFC imports from %s',
+  async (specifier) => {
+    const [result] = await eslint.lintText(source(specifier), {
+      filePath: filename,
+    })
 
-  expect(result.messages).toEqual([])
-})
+    expect(result.messages).toEqual([])
+  },
+)
 
 test.each(['../../admin/app/app.vue', '@a/admin/app/app.vue'])(
   'rejects the cross-app Vue SFC import %s',

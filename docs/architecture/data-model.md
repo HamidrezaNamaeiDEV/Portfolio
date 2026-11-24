@@ -1,5 +1,7 @@
 # Proposed database model
 
+**Phase 3 implementation.** The content foundation uses the [current models and API boundaries](../phase-3-content-management.md). The design below records the earlier proposal for broader product scope.
+
 Keystone owns the list definitions and generated Prisma schema. PostgreSQL owns foreign keys, uniqueness and check constraints. Apply reviewed migrations to a disposable database and verify the generated schema before deploying. Keep provider identifiers and internal editor fields out of public response types. [Keystone configuration](https://keystonejs.com/docs/config/config/) · [Keystone migration guide](https://keystonejs.com/docs/guides/database-migration/)
 
 ## Keystone and PostgreSQL integration

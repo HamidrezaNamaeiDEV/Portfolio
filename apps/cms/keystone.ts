@@ -1,30 +1,39 @@
-import { config, list } from '@keystone-6/core'
-import { denyAll } from '@keystone-6/core/access'
-import { text } from '@keystone-6/core/fields'
+import { createAuth } from '@keystone-6/auth'
+import { config } from '@keystone-6/core'
 import { PrismaPg } from '@prisma/adapter-pg'
+import { lists } from './content/lists.ts'
+import { publicSchema } from './content/public.ts'
+import {
+  databaseUrl,
+  editorialSession,
+  validateSessionConfig,
+} from './content/session.ts'
 
-export default config({
-  db: {
-    provider: 'postgresql',
-    prismaClientOptions: () => {
-      const connectionString = process.env.CMS_DATABASE_URL
-      if (!connectionString) {
-        throw new Error('Set CMS_DATABASE_URL before starting Keystone.')
-      }
-
-      return { adapter: new PrismaPg({ connectionString }) }
-    },
-  },
-  server: { port: 3002 },
-  ui: { isDisabled: true },
-  lists: {
-    // Temporary Foundation fixture. All generated operations are denied.
-    FoundationProbe: list({
-      access: denyAll,
-      fields: {
-        marker: text({ validation: { isRequired: true }, isIndexed: 'unique' }),
-        value: text({ validation: { isRequired: true } }),
-      },
-    }),
-  },
+const { withAuth } = createAuth({
+  listKey: 'User',
+  identityField: 'email',
+  secretField: 'password',
+  sessionData: 'id isOwner',
 })
+
+export default withAuth(
+  config({
+    db: {
+      provider: 'postgresql',
+      prismaClientOptions: () => ({
+        adapter: new PrismaPg({ connectionString: databaseUrl() }),
+      }),
+    },
+    graphql: {
+      bodyParser: { limit: '400kb' },
+      extendGraphqlSchema: publicSchema,
+    },
+    server: {
+      port: Number(process.env.CMS_PORT || '3002'),
+      extendExpressApp: () => validateSessionConfig(),
+    },
+    session: editorialSession,
+    ui: { isDisabled: true },
+    lists,
+  }),
+)
