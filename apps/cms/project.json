@@ -1,0 +1,14 @@
+{
+  "name": "cms",
+  "projectType": "application",
+  "tags": ["type:app", "scope:cms"],
+  "targets": {
+    "build": { "cache": false },
+    "lint": { "command": "eslint apps/cms" },
+    "typecheck": {
+      "command": "tsc --project apps/cms/tsconfig.json",
+      "dependsOn": ["build"],
+      "cache": false
+    }
+  }
+}

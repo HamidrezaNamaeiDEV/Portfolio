@@ -1,0 +1,12 @@
+node_modules/
+.nx/
+.nuxt/
+.output/
+.keystone/
+coverage/
+playwright-report/
+test-results/
+apps/cms/generated/
+.env
+.env.*
+!.env.example

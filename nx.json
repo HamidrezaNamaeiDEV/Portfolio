@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "plugins": ["@nx/nuxt/plugin"],
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "workspaceConfig"],
+    "workspaceConfig": [
+      "{workspaceRoot}/package-lock.json",
+      "{workspaceRoot}/tsconfig.base.json",
+      "{workspaceRoot}/eslint.config.mjs",
+      "{workspaceRoot}/.nvmrc"
+    ]
+  },
+  "targetDefaults": {
+    "lint": { "cache": true, "inputs": ["default", "^default"] }
+  }
+}

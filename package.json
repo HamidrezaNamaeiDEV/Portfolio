@@ -1,0 +1,43 @@
+{
+  "name": "engineering-portfolio",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.19.1",
+  "engines": {
+    "node": "24.22.3",
+    "npm": "11.19.1"
+  },
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ],
+  "scripts": {
+    "lint": "nx run-many -t lint",
+    "typecheck": "nx run-many -t typecheck",
+    "build": "nx run-many -t build",
+    "format:check": "prettier --check .",
+    "test": "nx run-many -t prepare --projects=web,admin && vitest run",
+    "test:e2e": "playwright test",
+    "test:cms": "bash scripts/smoke-cms.sh"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@nx/eslint-plugin": "24.0.6",
+    "@nx/nuxt": "24.0.6",
+    "@playwright/test": "1.65.1",
+    "@types/node": "24.13.2",
+    "@typescript-eslint/parser": "8.74.0",
+    "@vitejs/plugin-vue": "6.0.11",
+    "@vue/server-renderer": "3.5.46",
+    "eslint": "10.15.0",
+    "eslint-plugin-vue": "10.12.1",
+    "nx": "24.0.6",
+    "prettier": "3.10.1",
+    "typescript": "5.9.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.1",
+    "vue": "3.5.46",
+    "vue-eslint-parser": "10.4.2",
+    "vue-tsc": "3.3.14"
+  }
+}

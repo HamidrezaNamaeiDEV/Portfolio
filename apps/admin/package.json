@@ -1,0 +1,10 @@
+{
+  "name": "@a/admin",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@a/design-tokens": "*",
+    "nuxt": "4.7.0",
+    "vue": "3.5.46"
+  }
+}

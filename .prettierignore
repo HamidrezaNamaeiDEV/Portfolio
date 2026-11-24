@@ -1,0 +1,14 @@
+.agents/
+.nx/
+**/.nuxt/
+**/.output/
+**/.keystone/
+apps/cms/generated/
+apps/cms/schema.graphql
+coverage/
+playwright-report/
+test-results/
+AGENTS.md
+MASTER_PROMPT.md
+docs/
+skills-lock.json

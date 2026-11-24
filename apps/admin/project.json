@@ -1,0 +1,19 @@
+{
+  "name": "admin",
+  "projectType": "application",
+  "sourceRoot": "apps/admin/app",
+  "tags": ["type:app", "scope:admin"],
+  "targets": {
+    "lint": {
+      "command": "eslint apps/admin"
+    },
+    "typecheck": {
+      "command": "nuxt typecheck apps/admin",
+      "cache": false
+    },
+    "prepare": {
+      "command": "nuxt prepare apps/admin",
+      "cache": false
+    }
+  }
+}

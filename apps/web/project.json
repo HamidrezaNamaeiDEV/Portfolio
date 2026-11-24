@@ -1,0 +1,19 @@
+{
+  "name": "web",
+  "projectType": "application",
+  "sourceRoot": "apps/web/app",
+  "tags": ["type:app", "scope:web"],
+  "targets": {
+    "lint": {
+      "command": "eslint apps/web"
+    },
+    "typecheck": {
+      "command": "nuxt typecheck apps/web",
+      "cache": false
+    },
+    "prepare": {
+      "command": "nuxt prepare apps/web",
+      "cache": false
+    }
+  }
+}

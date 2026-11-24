@@ -1,0 +1,13 @@
+:root {
+  color-scheme: dark;
+  --a-color-surface: #151715;
+  --a-color-text: #f3eee3;
+  --a-color-muted: #b7bcb4;
+  --a-color-accent: #a1d4ae;
+  --a-font-sans: system-ui, sans-serif;
+  --a-font-display: Georgia, serif;
+  --a-space-2: 0.5rem;
+  --a-space-4: 1rem;
+  --a-space-8: 2rem;
+  --a-space-16: 4rem;
+}
