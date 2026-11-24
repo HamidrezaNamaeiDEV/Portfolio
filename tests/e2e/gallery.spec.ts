@@ -505,3 +505,64 @@ test('five station tour resolves published categories and profiles the live sess
     true,
   )
 })
+
+for (const [width, height] of [
+  [1280, 800],
+  [1440, 1000],
+  [1920, 1080],
+]) {
+  test(`desktop gallery pins and follows native scroll at ${width} × ${height}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height })
+    await page.goto(web)
+    const hero = page.locator('.gallery-scroll .intro')
+    await gallery(page).getByRole('button', { name: 'Explore in 3D' }).click()
+    const canvas = hero.locator('.gallery-surface--live')
+    await expect(canvas).toBeVisible()
+    await expect(hero).toHaveCSS('position', 'sticky')
+    const track = page.locator('.gallery-scroll')
+    const measure = () =>
+      track.evaluate((node) => {
+        const view = node.querySelector<HTMLElement>('.intro')!
+        return {
+          start: Math.round(node.getBoundingClientRect().top + window.scrollY),
+          range: node.offsetHeight - view.offsetHeight,
+        }
+      })
+    const { start, range } = await measure()
+    expect(range).toBeGreaterThan(height)
+    const scrollTo = (top: number) =>
+      page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), top)
+    const selector = gallery(page).getByRole('combobox', {
+      name: 'Engineering station',
+    })
+    const stop = async (index: number) => {
+      await scrollTo(start + Math.round((range * index) / 4))
+      await expect(canvas).toHaveAttribute('data-gallery-stop', String(index))
+      await expect(selector).toHaveValue(String(index))
+      expect(Math.abs((await hero.boundingBox())!.y)).toBeLessThan(2)
+    }
+    for (const index of [0, 1, 2, 3, 4, 2, 0]) await stop(index)
+
+    await selector.focus()
+    await selector.press('ArrowDown')
+    await expect(canvas).toHaveAttribute('data-gallery-stop', '1')
+    expect(
+      Math.abs((await page.evaluate(() => scrollY)) - (start + range / 4)),
+    ).toBeLessThan(3)
+
+    await scrollTo(start + range + 120)
+    await expect(canvas).toHaveAttribute('data-gallery-stop', '4')
+    await expect
+      .poll(async () => (await hero.boundingBox())!.y)
+      .toBeLessThan(-100)
+    const endPose = await canvas.getAttribute('data-gallery-progress')
+    await scrollTo(start + range + 200)
+    await expect
+      .poll(async () => (await hero.boundingBox())!.y)
+      .toBeLessThan(-180)
+    await expect(canvas).toHaveAttribute('data-gallery-progress', endPose!)
+    await stop(3)
+  })
+}

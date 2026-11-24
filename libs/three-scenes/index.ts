@@ -20,6 +20,8 @@ interface CorridorOptions {
   signal: AbortSignal
   // eslint-disable-next-line no-unused-vars -- The parameter name describes the callback payload.
   onSelection: (selected: boolean, station: number) => void
+  // eslint-disable-next-line no-unused-vars -- The argument identifies the picked station.
+  onNavigate: (station: number) => void
 }
 
 function disposeGeometry(root: Object3D) {
@@ -44,6 +46,7 @@ export async function mountCorridor({
   modelUrl,
   signal,
   onSelection,
+  onNavigate,
 }: CorridorOptions) {
   const response = await fetch(modelUrl, { signal })
   if (!response.ok) throw new Error('Gallery model unavailable')
@@ -78,10 +81,10 @@ export async function mountCorridor({
   let lastTime = 0
   let inView = true
   let disposed = false
-  let selected = false
+  let focus: boolean | null = null
   let hovered = -1
   let station = 0
-  let offset = 0
+  let progress = 0
   let resized = true
   let travel = 0
   let approach = 0
@@ -113,37 +116,36 @@ export async function mountCorridor({
       camera.updateProjectionMatrix()
       resized = false
     }
-    const targetTravel = Math.min(
-      1,
-      Math.max(0, -bounds.top / (bounds.height * 0.8)),
-    )
-    const targetApproach = selected ? 1 : 0
+    const targetApproach =
+      focus === null
+        ? Math.min(1, progress * (stops.length - 1))
+        : Number(focus)
     const delta = lastTime ? Math.min(now - lastTime, 50) : 16
     const mix = 1 - Math.exp(-delta / 120)
-    travel += (targetTravel - travel) * mix
+    travel += (progress - travel) * mix
     approach += (targetApproach - approach) * mix
-    const destination = stationOffsets[station] ?? 0
-    offset += (destination - offset) * mix
-    if (Math.abs(destination - offset) < 0.002) offset = destination
-    extension.group.visible = station !== 0 || offset !== 0
+    if (Math.abs(progress - travel) < 0.0005) travel = progress
+    if (Math.abs(targetApproach - approach) < 0.0005) approach = targetApproach
+
+    const position = travel * (stops.length - 1)
+    const from = Math.floor(position)
+    const start = stationOffsets[from] ?? 0
+    const end = stationOffsets[from + 1] ?? start
+    const offset = start + (end - start) * (position - from)
+    extension.group.visible = travel > 0 || progress > 0
     camera.position.set(
       -0.95 + approach * 0.34,
       1.57,
-      6.4 - travel * 2.8 - approach * 2 + offset,
+      6.4 - approach * 2 + offset,
     )
     camera.lookAt(0.68 + approach * 1.42, 1.22, -5 + approach * 3.2 + offset)
     renderer.render(scene, camera)
     canvas.dataset.galleryDrawCalls = String(renderer.info.render.calls)
     canvas.dataset.galleryTriangles = String(renderer.info.render.triangles)
     canvas.dataset.galleryTextures = String(renderer.info.memory.textures)
+    canvas.dataset.galleryProgress = travel.toFixed(4)
     lastTime = now
-    if (
-      Math.abs(targetTravel - travel) +
-        Math.abs(targetApproach - approach) +
-        Math.abs(destination - offset) >
-      0.002
-    )
-      requestFrame()
+    if (travel !== progress || approach !== targetApproach) requestFrame()
     else {
       lastTime = 0
       canvas.dataset.galleryStop = String(station)
@@ -166,10 +168,14 @@ export async function mountCorridor({
     return closest ? stops.findIndex(({ hit }) => hit === closest.object) : -1
   }
 
+  function isFocused() {
+    return focus ?? station !== 0
+  }
+
   function updateMarker() {
     stops.forEach(({ marker }, index) => {
       marker.color.setHex(
-        hovered === index || (selected && station === index)
+        hovered === index || (isFocused() && station === index)
           ? 0xc1ffcf
           : 0x7fbc91,
       )
@@ -179,9 +185,31 @@ export async function mountCorridor({
   }
 
   function setSelected(value: boolean) {
-    selected = value
+    focus = value
     updateMarker()
     onSelection(value, station)
+  }
+
+  function setProgress(value: number, settle = false) {
+    const next = Math.min(1, Math.max(0, value))
+    if (progress === next && (!settle || travel === next)) return
+    progress = next
+    delete canvas.dataset.galleryStop
+    const nextStation = Math.round(progress * (stops.length - 1))
+    if (nextStation !== station) {
+      station = nextStation
+      focus = null
+      updateMarker()
+      onSelection(isFocused(), station)
+    }
+    if (settle) {
+      travel = progress
+      approach =
+        focus === null
+          ? Math.min(1, progress * (stops.length - 1))
+          : Number(focus)
+    }
+    requestFrame()
   }
 
   function updateHover(event: PointerEvent) {
@@ -200,16 +228,8 @@ export async function mountCorridor({
   function pick(event: MouseEvent) {
     const index = pointsAtStation(event)
     if (index < 0) return
-    if (index === station) setSelected(!selected)
-    else goToStation(index)
-  }
-
-  function goToStation(index: number) {
-    if (!stops[index]) return
-    delete canvas.dataset.galleryStop
-    station = index
-    hovered = -1
-    setSelected(index !== 0)
+    if (index === station) setSelected(!isFocused())
+    else onNavigate(index)
   }
 
   function updateVisibility() {
@@ -238,14 +258,13 @@ export async function mountCorridor({
   resize.observe(canvas)
   intersection.observe(canvas)
   document.addEventListener('visibilitychange', updateVisibility)
-  window.addEventListener('scroll', requestFrame, { passive: true })
   canvas.addEventListener('pointermove', updateHover)
   canvas.addEventListener('pointerleave', clearHover)
   canvas.addEventListener('click', pick)
 
   return {
     setSelected,
-    goToStation,
+    setProgress,
     dispose() {
       if (disposed) return
       disposed = true
@@ -253,7 +272,6 @@ export async function mountCorridor({
       resize.disconnect()
       intersection.disconnect()
       document.removeEventListener('visibilitychange', updateVisibility)
-      window.removeEventListener('scroll', requestFrame)
       canvas.removeEventListener('pointermove', updateHover)
       canvas.removeEventListener('pointerleave', clearHover)
       canvas.removeEventListener('click', pick)

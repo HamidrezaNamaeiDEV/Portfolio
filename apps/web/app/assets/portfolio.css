@@ -516,6 +516,24 @@ a:focus-visible {
   gap: 0;
 }
 
+/* The range exists only while the desktop renderer owns a live canvas. */
+.gallery-scroll--live {
+  overflow-anchor: none;
+}
+
+.gallery-scroll--live::after {
+  display: block;
+  block-size: clamp(80rem, 220svh, 150rem);
+  content: '';
+}
+
+.gallery-scroll--live .intro {
+  position: sticky;
+  inset-block-start: 0;
+  min-block-size: 100svh;
+  padding-block: clamp(2rem, 6vh, 4.5rem);
+}
+
 .hero-copy {
   min-inline-size: 0;
   z-index: 1;
@@ -542,7 +560,7 @@ a:focus-visible {
   content: '';
 }
 
-.intro + .stack {
+.gallery-scroll + .stack {
   border-block-start-color: transparent;
   padding-block-start: clamp(2rem, 4vw, 3.5rem);
 }

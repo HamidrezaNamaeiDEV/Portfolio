@@ -4,6 +4,7 @@ import type { mountCorridor } from '@a/three-scenes'
 const props = defineProps<{
   stations: { name: string; href: string | null }[]
 }>()
+const emit = defineEmits<{ live: [active: boolean] }>()
 const activeStation = ref(0)
 const station = computed(() => props.stations[activeStation.value])
 
@@ -17,7 +18,38 @@ let pending: AbortController | undefined
 let releaseContext: (() => void) | undefined
 let desktop: MediaQueryList | undefined
 
-function stop(next: 'poster' | 'failed' = 'poster') {
+function scrollRange() {
+  const view = canvas.value?.closest<HTMLElement>('.intro')
+  const track = view?.parentElement
+  if (!view || !track) return
+  return {
+    start: Math.round(track.getBoundingClientRect().top + window.scrollY),
+    distance: track.offsetHeight - view.offsetHeight,
+  }
+}
+
+function syncProgress() {
+  const range = scrollRange()
+  if (!scene || !range || range.distance <= 0) return
+  const position = (window.scrollY - range.start) / range.distance
+  scene.setProgress(position, position < 0 || position > 1)
+}
+
+function jumpToStation(index: number) {
+  const range = scrollRange()
+  if (!range || range.distance <= 0 || !props.stations[index]) return
+  window.scrollTo({
+    top: range.start + (index / (props.stations.length - 1)) * range.distance,
+    behavior: 'smooth',
+  })
+}
+
+function stop(next: 'poster' | 'failed' = 'poster', restorePosition = true) {
+  const range = phase.value === 'live' ? scrollRange() : undefined
+  const position = range ? window.scrollY - range.start : -1
+  window.removeEventListener('scroll', syncProgress)
+  window.removeEventListener('resize', syncProgress)
+  emit('live', false)
   pending?.abort()
   pending = undefined
   scene?.dispose()
@@ -27,6 +59,11 @@ function stop(next: 'poster' | 'failed' = 'poster') {
   selected.value = false
   activeStation.value = 0
   phase.value = next
+  if (restorePosition && range && position >= 0 && position <= range.distance) {
+    void nextTick(() =>
+      window.scrollTo({ top: range.start, behavior: 'instant' }),
+    )
+  }
 }
 
 function updateEligibility() {
@@ -50,7 +87,7 @@ onMounted(() => {
 })
 onBeforeUnmount(() => {
   desktop?.removeEventListener('change', updateEligibility)
-  stop()
+  stop('poster', false)
 })
 
 async function activate() {
@@ -89,6 +126,7 @@ async function activate() {
       context,
       modelUrl: '/models/frontend-study.glb',
       signal: request.signal,
+      onNavigate: jumpToStation,
       onSelection: (value, index) => {
         activeStation.value = index
         selected.value = value
@@ -101,6 +139,12 @@ async function activate() {
 
     scene = corridor
     phase.value = 'live'
+    emit('live', true)
+    await nextTick()
+    if (scene !== corridor) return
+    window.addEventListener('scroll', syncProgress, { passive: true })
+    window.addEventListener('resize', syncProgress)
+    syncProgress()
   } catch {
     if (!request.signal.aborted) stop('failed')
   } finally {
@@ -109,7 +153,7 @@ async function activate() {
 }
 
 function changeStation(event: Event) {
-  scene?.goToStation(Number((event.target as HTMLSelectElement).value))
+  jumpToStation(Number((event.target as HTMLSelectElement).value))
 }
 
 function select() {
@@ -120,7 +164,7 @@ function restorePosterFromLink() {
   // Keep the anchor's native navigation and move focus to its destination.
   const target = document.getElementById((station.value?.href ?? '').slice(1))
   target?.focus({ preventScroll: true })
-  stop()
+  stop('poster', false)
 }
 </script>
 

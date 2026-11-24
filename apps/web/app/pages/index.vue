@@ -47,6 +47,7 @@ if (siteUrl) {
   })
 }
 
+const galleryLive = ref(false)
 const galleryStations = computed(() =>
   [
     ['frontend', 'Frontend Engineering'],
@@ -117,24 +118,30 @@ useSeoMeta({
   </header>
 
   <main id="main" class="frame" tabindex="-1">
-    <section id="home" class="intro" aria-labelledby="identity">
-      <div class="hero-copy">
-        <h1 id="identity">{{ identity }}</h1>
-        <p v-if="profile?.displayName">{{ headline }}</p>
-        <p>
-          A frontend-focused full-stack software engineer working across modern
-          web technologies, backend systems, AI-powered development, and product
-          engineering.
-        </p>
-        <div class="hero-actions">
-          <a href="#technology-stack"
-            >Explore My Stack <span aria-hidden="true">↘</span></a
-          >
-          <a href="#experience">View Experience</a>
+    <div
+      id="home"
+      class="gallery-scroll"
+      :class="{ 'gallery-scroll--live': galleryLive }"
+    >
+      <section class="intro" aria-labelledby="identity">
+        <div class="hero-copy">
+          <h1 id="identity">{{ identity }}</h1>
+          <p v-if="profile?.displayName">{{ headline }}</p>
+          <p>
+            A frontend-focused full-stack software engineer working across
+            modern web technologies, backend systems, AI-powered development,
+            and product engineering.
+          </p>
+          <div class="hero-actions">
+            <a href="#technology-stack"
+              >Explore My Stack <span aria-hidden="true">↘</span></a
+            >
+            <a href="#experience">View Experience</a>
+          </div>
         </div>
-      </div>
-      <GalleryHero :stations="galleryStations" />
-    </section>
+        <GalleryHero :stations="galleryStations" @live="galleryLive = $event" />
+      </section>
+    </div>
 
     <div v-if="error" class="load-error" role="status">
       <p>Portfolio content is temporarily unavailable.</p>
