@@ -1,11 +1,11 @@
 :root {
-  --admin-panel: #1b1f1c;
+  --admin-panel: var(--a-color-panel);
   --admin-input: #171b18;
-  --admin-hover: #252e27;
-  --admin-line: #38433b;
-  --admin-control-line: #667469;
-  --admin-danger: #ffb8aa;
-  --admin-radius: 0.5rem;
+  --admin-hover: var(--a-color-panel-raised);
+  --admin-line: var(--a-color-border);
+  --admin-control-line: var(--a-color-border-strong);
+  --admin-danger: var(--a-color-danger);
+  --admin-radius: var(--a-radius-control);
   --admin-max: 86rem;
 }
 
@@ -50,6 +50,10 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+input[type='search'] {
+  accent-color: var(--a-color-accent);
 }
 
 input,

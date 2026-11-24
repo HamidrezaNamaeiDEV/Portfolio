@@ -3,7 +3,13 @@ import type { H3Event } from 'h3'
 const cookieName = 'keystonejs-session'
 
 export function privateResponse(event: H3Event) {
-  setResponseHeader(event, 'Cache-Control', 'private, no-store')
+  // Nitro replaces the route-rule default with no-cache on errors when the
+  // values match exactly. Keep auth error responses explicitly non-storable.
+  setResponseHeader(
+    event,
+    'Cache-Control',
+    'private, no-store, must-revalidate',
+  )
 }
 
 export function requireAdminOrigin(event: H3Event) {

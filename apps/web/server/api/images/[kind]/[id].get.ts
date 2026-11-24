@@ -3,7 +3,10 @@ export default defineEventHandler(async (event) => {
   const kind = getRouterParam(event, 'kind')
   const id = getRouterParam(event, 'id')
   if (
-    (kind !== 'skill' && kind !== 'project') ||
+    (kind !== 'skill' &&
+      kind !== 'project' &&
+      kind !== 'experience' &&
+      kind !== 'profile') ||
     !id ||
     !/^[a-zA-Z0-9_-]{1,80}$/.test(id)
   ) {

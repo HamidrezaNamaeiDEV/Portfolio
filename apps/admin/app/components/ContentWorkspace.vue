@@ -9,22 +9,35 @@ import {
 } from '../utils/content-editor'
 import { apiMessage, isUnauthorized } from '../utils/api-errors'
 
-const emit = defineEmits<{ expired: [] }>()
 const primary = ['skills', 'experiences', 'projects'] as const
 const taxonomy = ['categories', 'proficiencies'] as const
-const kind = ref<ContentKind>('skills')
+const route = useRoute()
+function initialKind(value: unknown): ContentKind {
+  return value === 'experiences' ||
+    value === 'projects' ||
+    value === 'categories' ||
+    value === 'proficiencies'
+    ? value
+    : 'skills'
+}
+const kind = ref<ContentKind>(initialKind(route.query.section))
 const section = computed(() => sections[kind.value])
 const content = shallowRef<AdminContent>()
 const loading = ref(true)
 const loadFailure = ref('')
 const search = ref('')
 const status = ref('')
+const visibility = ref('')
+const categoryId = ref('')
+const proficiencyId = ref('')
+const selected = ref<string[]>([])
 const editing = shallowRef<{ item?: ContentRecord }>()
 const editor = ref<{ dirty: boolean }>()
 const sectionTitle = ref<HTMLElement>()
 const busy = ref(false)
 const editorFailure = ref('')
 const notice = ref('')
+const { session, message: sessionMessage } = useAdminSession()
 
 const records = computed<ContentRecord[]>(
   () => content.value?.[kind.value] ?? [],
@@ -34,6 +47,14 @@ const filtered = computed(() => {
   return records.value.filter(
     (record) =>
       (!status.value || record.status === status.value) &&
+      (!visibility.value ||
+        (visibility.value === 'visible' ? record.visible : !record.visible)) &&
+      (!categoryId.value ||
+        ('proficiency' in record &&
+          record.category?.id === categoryId.value)) &&
+      (!proficiencyId.value ||
+        ('proficiency' in record &&
+          record.proficiency?.id === proficiencyId.value)) &&
       (!term ||
         [recordName(record), recordDetail(record)].some((text) =>
           text?.toLowerCase().includes(term),
@@ -46,9 +67,14 @@ async function load() {
   loadFailure.value = ''
   try {
     content.value = await $fetch<AdminContent>('/api/content')
+    if (route.query.create === 'skill' && kind.value === 'skills') {
+      await nextTick()
+      openEditor()
+      await navigateTo('/content')
+    }
   } catch (error) {
     if (isUnauthorized(error)) {
-      emit('expired')
+      expireSession()
       return
     }
     loadFailure.value = apiMessage(error, 'Could not load content. Try again.')
@@ -66,18 +92,39 @@ function mayLeaveEditor() {
   )
 }
 
+function expireSession() {
+  session.value = { owner: null }
+  sessionMessage.value = 'Your session expired. Sign in again to continue.'
+}
+
 function showSection(next: ContentKind) {
   if (kind.value === next || !mayLeaveEditor()) return
   editing.value = undefined
   kind.value = next
   editorFailure.value = ''
   notice.value = ''
+  selected.value = []
   clearFilters()
 }
 
 function clearFilters() {
   search.value = ''
   status.value = ''
+  visibility.value = ''
+  categoryId.value = ''
+  proficiencyId.value = ''
+}
+
+function toggleAllFiltered(event: Event) {
+  const checked = (event.currentTarget as HTMLInputElement).checked
+  selected.value = checked ? filtered.value.map(({ id }) => id) : []
+}
+
+function toggleSelected(id: string, event: Event) {
+  const checked = (event.currentTarget as HTMLInputElement).checked
+  selected.value = checked
+    ? [...new Set([...selected.value, id])]
+    : selected.value.filter((selectedId) => selectedId !== id)
 }
 
 function openEditor(item?: ContentRecord) {
@@ -102,7 +149,7 @@ function success(action: 'saved' | 'deleted') {
 
 function handleMutationError(error: unknown) {
   if (isUnauthorized(error)) {
-    emit('expired')
+    expireSession()
     return
   }
   editorFailure.value = apiMessage(
@@ -147,42 +194,73 @@ async function remove(item: ContentRecord) {
     busy.value = false
   }
 }
+
+async function bulkChange(
+  change: 'status' | 'visible',
+  value: string | boolean,
+) {
+  const ids = [...selected.value]
+  if (!ids.length || busy.value) return
+  const action =
+    change === 'status'
+      ? value === 'published'
+        ? 'publish'
+        : 'move to drafts'
+      : value
+        ? 'show'
+        : 'hide'
+  if (
+    !window.confirm(
+      `${action[0]!.toUpperCase()}${action.slice(1)} ${ids.length} selected skills?`,
+    )
+  )
+    return
+
+  busy.value = true
+  editorFailure.value = ''
+  try {
+    await $fetch('/api/content/bulk', {
+      method: 'POST',
+      body: { ids, [change]: value },
+    })
+    selected.value = []
+    notice.value = `Updated ${ids.length} selected skills.`
+    await load()
+  } catch (error) {
+    handleMutationError(error)
+  } finally {
+    busy.value = false
+  }
+}
 </script>
 
 <template>
   <div class="workspace">
-    <aside class="workspace__sidebar">
-      <nav aria-label="Content areas">
-        <div class="nav-group">
-          <p>Portfolio</p>
-          <button
-            v-for="item in primary"
-            :key="item"
-            type="button"
-            :aria-current="kind === item ? 'page' : undefined"
-            :disabled="busy"
-            @click="showSection(item)"
-          >
-            {{ sections[item].title }}
-          </button>
-        </div>
-        <div class="nav-group">
-          <p>Skill settings</p>
-          <button
-            v-for="item in taxonomy"
-            :key="item"
-            type="button"
-            :aria-current="kind === item ? 'page' : undefined"
-            :disabled="busy"
-            @click="showSection(item)"
-          >
-            {{ sections[item].title }}
-          </button>
-        </div>
-      </nav>
-    </aside>
-
     <main class="workspace__main" aria-labelledby="section-title">
+      <nav class="workspace__sections" aria-label="Content areas">
+        <button
+          v-for="item in primary"
+          :key="item"
+          type="button"
+          :aria-current="kind === item ? 'page' : undefined"
+          :disabled="busy"
+          @click="showSection(item)"
+        >
+          {{ sections[item].title }}
+        </button>
+        <span class="workspace__divider" aria-hidden="true"></span>
+        <button
+          v-for="item in taxonomy"
+          :key="item"
+          type="button"
+          :aria-current="kind === item ? 'page' : undefined"
+          :disabled="busy"
+          @click="showSection(item)"
+        >
+          {{ sections[item].title }}
+        </button>
+      </nav>
+
       <div class="section-heading">
         <h1 id="section-title" ref="sectionTitle" tabindex="-1">
           {{ section.title }}
@@ -223,7 +301,7 @@ async function remove(item: ContentRecord) {
       <template v-else>
         <div v-if="records.length" class="list-toolbar">
           <label class="search-field">
-            <span class="a11y-only">Search {{ section.empty }}</span>
+            <span>Search</span>
             <input
               v-model="search"
               type="search"
@@ -231,16 +309,90 @@ async function remove(item: ContentRecord) {
             />
           </label>
           <label class="filter-field">
-            <span class="a11y-only">Filter by publication status</span>
+            <span>Publication status</span>
             <select v-model="status">
               <option value="">All statuses</option>
               <option value="published">Published</option>
               <option value="draft">Draft</option>
             </select>
           </label>
+          <label class="filter-field">
+            <span>Visibility</span>
+            <select v-model="visibility" aria-label="Filter by visibility">
+              <option value="">All visibility</option>
+              <option value="visible">Visible</option>
+              <option value="hidden">Hidden</option>
+            </select>
+          </label>
+          <label v-if="kind === 'skills'" class="filter-field">
+            <span>Category</span>
+            <select v-model="categoryId" aria-label="Filter by category">
+              <option value="">All categories</option>
+              <option
+                v-for="item in content?.categories"
+                :key="item.id"
+                :value="item.id"
+              >
+                {{ item.name }}
+              </option>
+            </select>
+          </label>
+          <label v-if="kind === 'skills'" class="filter-field">
+            <span>Proficiency</span>
+            <select v-model="proficiencyId" aria-label="Filter by proficiency">
+              <option value="">All levels</option>
+              <option
+                v-for="item in content?.proficiencies"
+                :key="item.id"
+                :value="item.id"
+              >
+                {{ item.name }}
+              </option>
+            </select>
+          </label>
           <p class="muted list-count" aria-live="polite">
             {{ filtered.length }} of {{ records.length }}
           </p>
+        </div>
+        <div
+          v-if="kind === 'skills' && selected.length"
+          class="bulk-actions"
+          role="group"
+          aria-label="Selected skill actions"
+        >
+          <span>{{ selected.length }} selected</span>
+          <button
+            class="button button--primary"
+            type="button"
+            :disabled="busy"
+            @click="bulkChange('status', 'published')"
+          >
+            Publish selected skills
+          </button>
+          <button
+            class="button"
+            type="button"
+            :disabled="busy"
+            @click="bulkChange('status', 'draft')"
+          >
+            Move selected skills to drafts
+          </button>
+          <button
+            class="button"
+            type="button"
+            :disabled="busy"
+            @click="bulkChange('visible', false)"
+          >
+            Hide selected skills
+          </button>
+          <button
+            class="button"
+            type="button"
+            :disabled="busy"
+            @click="bulkChange('visible', true)"
+          >
+            Show selected skills
+          </button>
         </div>
         <div v-if="filtered.length" class="table-wrap">
           <table>
@@ -251,8 +403,23 @@ async function remove(item: ContentRecord) {
             </caption>
             <thead>
               <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Status</th>
+                <th scope="col">
+                  <label v-if="kind === 'skills'" class="select-all">
+                    <input
+                      type="checkbox"
+                      aria-label="Select all filtered skills"
+                      :checked="
+                        filtered.length > 0 &&
+                        filtered.every((item) => selected.includes(item.id))
+                      "
+                      :disabled="busy"
+                      @change="toggleAllFiltered"
+                    />
+                    <span>Name</span>
+                  </label>
+                  <span v-else>Name</span>
+                </th>
+                <th scope="col">Publication status</th>
                 <th scope="col">Order</th>
                 <th scope="col"><span class="a11y-only">Actions</span></th>
               </tr>
@@ -260,12 +427,32 @@ async function remove(item: ContentRecord) {
             <tbody>
               <tr v-for="item in filtered" :key="item.id">
                 <th scope="row">
-                  <span>{{ recordName(item) }}</span>
-                  <small v-if="recordDetail(item)" class="muted">{{
-                    recordDetail(item)
-                  }}</small>
+                  <div class="record-name">
+                    <input
+                      v-if="kind === 'skills'"
+                      type="checkbox"
+                      :aria-label="`Select ${recordName(item)}`"
+                      :checked="selected.includes(item.id)"
+                      :disabled="busy"
+                      @change="toggleSelected(item.id, $event)"
+                    />
+                    <img
+                      v-if="'proficiency' in item && item.logo"
+                      :src="item.logo"
+                      :alt="`${item.name} logo`"
+                      width="36"
+                      height="36"
+                    />
+                    <div class="record-name__text">
+                      <span>{{ recordName(item) }}</span>
+                      <small v-if="recordDetail(item)" class="muted">{{
+                        recordDetail(item)
+                      }}</small>
+                    </div>
+                  </div>
                 </th>
-                <td>
+                <td class="status-cell">
+                  <span class="cell-label">Status</span>
                   <span
                     class="publication-status"
                     :class="{
@@ -277,8 +464,11 @@ async function remove(item: ContentRecord) {
                   </span>
                   <small v-if="!item.visible" class="muted">Hidden</small>
                 </td>
-                <td class="order">{{ item.sortOrder }}</td>
-                <td>
+                <td class="order">
+                  <span class="cell-label">Order</span>
+                  {{ item.sortOrder }}
+                </td>
+                <td class="action-cell">
                   <button
                     class="button row-action"
                     type="button"
@@ -312,37 +502,22 @@ async function remove(item: ContentRecord) {
 
 <style scoped>
 .workspace {
-  display: grid;
-  grid-template-columns: 13.5rem minmax(0, 1fr);
   max-inline-size: var(--admin-max);
   min-block-size: calc(100svh - 4.25rem);
   margin-inline: auto;
 }
 
-.workspace__sidebar {
-  padding: var(--a-space-8) var(--a-space-4);
-  border-inline-end: 1px solid var(--admin-line);
+.workspace__sections {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-block-end: var(--a-space-6);
+  border-block-end: 1px solid var(--admin-line);
+  padding-block-end: var(--a-space-2);
 }
 
-.workspace__sidebar nav,
-.nav-group {
-  display: grid;
-  gap: 0.375rem;
-}
-
-.workspace__sidebar nav {
-  gap: 1.75rem;
-}
-
-.nav-group p {
-  padding-inline: 0.75rem;
-  margin-block-end: 0.125rem;
-  color: var(--a-color-muted);
-  font-size: 0.8125rem;
-  font-weight: 550;
-}
-
-.nav-group button {
+.workspace__sections button {
   min-block-size: 2.5rem;
   padding: 0.375rem 0.75rem;
   border: 1px solid transparent;
@@ -354,14 +529,21 @@ async function remove(item: ContentRecord) {
   cursor: pointer;
 }
 
-.nav-group button:hover:not([aria-current]) {
+.workspace__sections button:hover:not([aria-current]) {
   background: var(--admin-hover);
 }
 
-.nav-group button[aria-current] {
+.workspace__sections button[aria-current] {
   background: var(--admin-hover);
   border-color: var(--admin-line);
   color: var(--a-color-accent);
+}
+
+.workspace__divider {
+  inline-size: 1px;
+  block-size: 1.5rem;
+  margin-inline: 0.25rem;
+  background: var(--admin-line);
 }
 
 .workspace__main {
@@ -387,16 +569,42 @@ async function remove(item: ContentRecord) {
 }
 
 .search-field {
-  flex: 0 1 22rem;
+  display: grid;
+  flex: 1 1 16rem;
+  min-inline-size: min(100%, 16rem);
+  gap: 0.25rem;
 }
 
 .filter-field {
-  flex: 0 0 auto;
+  display: grid;
+  flex: 0 1 12rem;
+  min-inline-size: min(100%, 9rem);
+  gap: 0.25rem;
+  color: var(--a-color-muted);
+  font-size: 0.8125rem;
 }
 
 .list-count {
   margin-inline-start: auto;
   font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.bulk-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--a-space-2);
+  margin-block-end: var(--a-space-4);
+  padding: var(--a-space-3);
+  border: 1px solid var(--admin-line);
+  border-radius: var(--admin-radius);
+  background: var(--admin-panel);
+}
+
+.bulk-actions > span {
+  margin-inline-end: auto;
+  color: var(--a-color-muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -424,7 +632,7 @@ td {
   border-block-end: 1px solid var(--admin-line);
   padding: 0.75rem clamp(0.375rem, 2vw, 1rem);
   text-align: start;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 thead th {
@@ -450,10 +658,44 @@ td small {
 }
 
 tbody th small {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
+  margin-block-start: 0.125rem;
+  overflow-wrap: break-word;
+}
+
+.record-name {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-inline-size: 0;
+}
+
+.record-name img {
+  flex: 0 0 auto;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border: 1px solid var(--admin-line);
+  border-radius: 0.375rem;
+  background: var(--admin-input);
+  object-fit: contain;
+  padding: 0.125rem;
+}
+
+.record-name__text {
+  min-inline-size: 0;
+}
+
+.select-all {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.select-all input {
+  flex: 0 0 auto;
+}
+
+.cell-label {
+  display: none;
 }
 
 .publication-status {
@@ -483,33 +725,6 @@ tbody th small {
   border-radius: 0.75rem;
 }
 
-@media (max-width: 55rem) {
-  .workspace {
-    display: block;
-  }
-
-  .workspace__sidebar {
-    padding: var(--a-space-4);
-    border-inline-end: 0;
-    border-block-end: 1px solid var(--admin-line);
-  }
-
-  .workspace__sidebar nav {
-    gap: 0.5rem;
-  }
-
-  .nav-group {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  .nav-group p {
-    inline-size: 7rem;
-  }
-}
-
 @media (max-width: 32rem) {
   .section-heading h1 {
     font-size: 1.625rem;
@@ -520,11 +735,107 @@ tbody th small {
   }
 
   .search-field {
-    flex-basis: 100%;
+    min-inline-size: 100%;
   }
 
-  .nav-group p {
-    flex-basis: 100%;
+  .workspace__main {
+    padding-block-start: var(--a-space-4);
+  }
+
+  .workspace__sections {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .workspace__sections button {
+    flex: 0 0 auto;
+  }
+
+  .workspace__divider {
+    display: none;
+  }
+
+  .table-wrap {
+    overflow: visible;
+    border: 0;
+  }
+
+  table,
+  tbody {
+    display: block;
+    background: transparent;
+  }
+
+  thead {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  tbody {
+    display: grid;
+    gap: var(--a-space-2);
+  }
+
+  tbody tr {
+    display: grid;
+    grid-template-areas: 'name status action' 'name order action';
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 0.375rem 0.625rem;
+    padding: var(--a-space-3);
+    border: 1px solid var(--admin-line);
+    border-radius: var(--a-radius-surface);
+    background: var(--admin-panel);
+  }
+
+  tbody tr:last-child :is(th, td) {
+    border-block-end: 0;
+  }
+
+  tbody th {
+    grid-area: name;
+    inline-size: auto;
+    min-inline-size: 0;
+    padding: 0;
+    border: 0;
+    word-break: normal;
+  }
+
+  tbody td {
+    padding: 0;
+    border: 0;
+  }
+
+  .status-cell {
+    grid-area: status;
+    white-space: nowrap;
+  }
+
+  .order {
+    grid-area: order;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.375rem;
+    white-space: nowrap;
+  }
+
+  .action-cell {
+    grid-area: action;
+  }
+
+  .cell-label {
+    display: inline;
+    color: var(--a-color-muted);
+    font-size: 0.75rem;
+    font-weight: 450;
+  }
+
+  .status-cell .cell-label {
+    display: none;
   }
 }
 </style>

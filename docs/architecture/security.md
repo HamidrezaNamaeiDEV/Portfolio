@@ -25,3 +25,26 @@ Only Nginx serves public traffic. Trust proxy headers only from that configured 
 In the Project slice, test anonymous and inactive users, sibling-origin and foreign-origin mutations, expiry and replay after session revocation, access from the public host, direct object access, draft media and allowlisted public fields. Test that generated mutation paths and invalid operation parameters cannot reach protected state. Confirm login and logout work through the facade while responses and cookies stay on the admin origin. Confirm security headers and routes through the actual staging proxy. Audit sign-in security events separately from editorial transactions where no content commit exists. Audit important editor actions atomically with their content updates.
 
 [Data model](data-model.md) · [Deployment proposal](../deployment/vps-deployment.md)
+
+## Phase 4 implemented boundaries
+
+The admin `/preview` route keeps the existing owner session and global
+`private, no-store` and `noindex` response rules. Its API requires the owner and
+returns two separate projections: the public published-and-visible snapshot,
+and visible draft candidates. Anonymous direct API requests fail with 401 and
+remain non-storable and non-indexable. The preview page itself contains no
+draft payload in its server-rendered HTML; it fetches protected data after the
+owner session is established.
+
+Profile reads and writes use the fixed admin facade. Writes also require the
+configured admin Origin; incoming fields are allowlisted and checked for type,
+length, and safe URL format. The public site receives only the profile and
+content fields allowed by the published projection. Profile and experience
+images use the existing bounded data-string handling, and the public image
+route checks that the referenced record is published and visible.
+
+Unauthorized API errors receive `private, no-store, must-revalidate`. This
+preserves the explicit private response policy when Nitro formats an error;
+the disposable-PostgreSQL browser test checks the actual 401 headers. Production
+host, HTTPS, proxy, and cookie behavior still require the Phase 7 staging
+verification.

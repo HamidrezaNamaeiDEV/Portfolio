@@ -48,6 +48,7 @@ export interface EditorDraft {
   responsibilities: string
   achievements: string
   slug: string
+  url: string
   categoryId: string | null
   proficiencyId: string | null
   projectIds: string[]
@@ -91,12 +92,13 @@ export function prepareDraft(item?: ContentRecord): EditorDraft {
     responsibilities: experience?.responsibilities ?? '',
     achievements: experience?.achievements ?? '',
     slug: project?.slug ?? '',
+    url: project?.url ?? '',
     categoryId: skill?.category?.id ?? null,
     proficiencyId: skill?.proficiency?.id ?? null,
     projectIds: skill?.projects.map(({ id }) => id) ?? [],
     skillIds:
       (project?.skills ?? experience?.skills)?.map(({ id }) => id) ?? [],
-    image: skill?.logo ?? project?.cover ?? '',
+    image: experience?.companyLogo ?? skill?.logo ?? project?.cover ?? '',
   }
 }
 
@@ -148,6 +150,7 @@ export function draftPayload(
       responsibilities: draft.responsibilities.trim(),
       achievements: draft.achievements.trim(),
       skillIds: draft.skillIds,
+      ...(draft.image !== originalImage ? { companyLogo: draft.image } : {}),
     }
   }
   const named = { ...common, name: draft.name.trim() }
@@ -164,6 +167,7 @@ export function draftPayload(
     return {
       ...named,
       slug: draft.slug.trim(),
+      url: draft.url.trim(),
       skillIds: draft.skillIds,
       ...(draft.image !== originalImage ? { cover: draft.image } : {}),
     }

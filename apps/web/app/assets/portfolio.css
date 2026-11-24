@@ -158,6 +158,21 @@ a:focus-visible {
   overflow: hidden;
 }
 
+.intro-portrait {
+  justify-self: end;
+  width: min(100%, 22rem);
+  aspect-ratio: 1;
+  border: 1px solid var(--portfolio-divider);
+  background: var(--portfolio-panel);
+}
+
+.intro-portrait img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .intro-structure {
   position: relative;
   width: min(100%, 22rem);
@@ -389,6 +404,22 @@ a:focus-visible {
   gap: var(--a-space-4);
 }
 
+.experience-company {
+  display: flex;
+  align-items: center;
+  gap: var(--a-space-3);
+}
+
+.experience-company img {
+  flex: 0 0 auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--portfolio-divider);
+  background: var(--portfolio-panel);
+  object-fit: contain;
+  padding: 0.2rem;
+}
+
 .timeline-date {
   padding-block-start: 0.2rem;
   color: var(--a-color-accent);
@@ -406,6 +437,16 @@ a:focus-visible {
   font-family: var(--a-font-display);
   font-size: clamp(1.4rem, 2.7vw, 2rem);
   font-weight: 400;
+}
+
+.project-entry h3 a {
+  text-decoration-color: var(--portfolio-accent-line);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+}
+
+.project-entry h3 a:hover {
+  color: var(--a-color-accent);
 }
 
 .position {
@@ -477,6 +518,13 @@ a:focus-visible {
   font-size: 0.875rem;
 }
 
+.site-footer__contact {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 var(--a-space-3);
+}
+
 @media (max-width: 52rem) {
   .stack-groups {
     grid-template-columns: minmax(0, 1fr);
@@ -495,6 +543,11 @@ a:focus-visible {
 
   .intro-composition {
     display: none;
+  }
+
+  .intro-portrait {
+    justify-self: start;
+    width: min(100%, 16rem);
   }
 
   .timeline-entry {

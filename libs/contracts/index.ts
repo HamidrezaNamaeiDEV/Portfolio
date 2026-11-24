@@ -46,6 +46,7 @@ export interface SkillRecord extends NamedRecord, EditorialFields {
 export interface ExperienceFields {
   id: string
   company: string
+  companyLogo: string
   position: string
   startYear: number
   startMonth: number
@@ -59,8 +60,34 @@ export interface ExperienceFields {
 export interface ExperienceRecord extends ExperienceFields, EditorialFields {}
 export interface ProjectRecord extends NamedRecord, EditorialFields {
   slug: string
+  url: string
   cover: string
   skills: NamedRecord[]
+}
+
+export interface ProfileRecord {
+  id: string
+  displayName: string
+  headline: string
+  biography: string
+  profileImage: string
+  contactEmail: string
+  phone: string
+  location: string
+  websiteUrl: string
+  githubUrl: string
+  gitlabUrl: string
+  linkedinUrl: string
+  xUrl: string
+  status: 'draft' | 'published'
+  visible: boolean
+}
+
+export interface PublicProfile extends Omit<
+  ProfileRecord,
+  'id' | 'profileImage' | 'status' | 'visible'
+> {
+  profileImage: string | null
 }
 
 export interface AdminContent {
@@ -71,7 +98,18 @@ export interface AdminContent {
   projects: ProjectRecord[]
 }
 
+export interface PortfolioPreview {
+  published: PublicPortfolio
+  draftCandidates: Pick<
+    AdminContent,
+    'categories' | 'proficiencies' | 'skills' | 'experiences' | 'projects'
+  > & {
+    profile: ProfileRecord | null
+  }
+}
+
 export interface PublicPortfolio {
+  profile: PublicProfile | null
   categories: Array<NamedRecord & { description: string }>
   skills: Array<
     Pick<
@@ -82,9 +120,14 @@ export interface PublicPortfolio {
       projects: Array<NamedRecord & { slug: string }>
     }
   >
-  experiences: Array<ExperienceFields & { description: string }>
+  experiences: Array<
+    ExperienceFields & { description: string; companyLogo: string | null }
+  >
   projects: Array<
-    Pick<ProjectRecord, 'id' | 'name' | 'slug' | 'description' | 'skills'> & {
+    Pick<
+      ProjectRecord,
+      'id' | 'name' | 'slug' | 'url' | 'description' | 'skills'
+    > & {
       cover: string | null
     }
   >

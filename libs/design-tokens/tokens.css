@@ -4,10 +4,24 @@
   --a-color-text: #f3eee3;
   --a-color-muted: #b7bcb4;
   --a-color-accent: #a1d4ae;
+  --a-color-panel: #1b1f1c;
+  --a-color-panel-raised: #222a24;
+  --a-color-border: #38433b;
+  --a-color-border-strong: #667469;
+  --a-color-success: #a1d4ae;
+  --a-color-danger: #ffb8aa;
+  --a-color-warning: #f0d291;
   --a-font-sans: system-ui, sans-serif;
   --a-font-display: Georgia, serif;
+  --a-space-1: 0.25rem;
   --a-space-2: 0.5rem;
+  --a-space-3: 0.75rem;
   --a-space-4: 1rem;
+  --a-space-6: 1.5rem;
   --a-space-8: 2rem;
+  --a-space-12: 3rem;
   --a-space-16: 4rem;
+  --a-radius-control: 0.5rem;
+  --a-radius-surface: 0.75rem;
+  --a-shadow-menu: 0 12px 32px rgb(0 0 0 / 28%);
 }

@@ -52,7 +52,18 @@ const timeline = computed(() =>
             >
           </p>
           <div>
-            <h3>{{ entry.company }}</h3>
+            <div class="experience-company">
+              <img
+                v-if="entry.companyLogo"
+                :src="entry.companyLogo"
+                :alt="`${entry.company} logo`"
+                width="40"
+                height="40"
+                loading="lazy"
+                decoding="async"
+              />
+              <h3>{{ entry.company }}</h3>
+            </div>
             <p class="position">{{ entry.position }}</p>
             <p v-if="entry.description" class="item-copy">
               {{ entry.description }}

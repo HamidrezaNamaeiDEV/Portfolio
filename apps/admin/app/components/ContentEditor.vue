@@ -29,6 +29,14 @@ const dirty = computed(
   () => JSON.stringify(draft.value) !== JSON.stringify(original),
 )
 const section = computed(() => sections[props.kind])
+const publicationMessage = computed(() => {
+  if (draft.value.status === 'draft') {
+    return 'Drafts are never public. Visibility takes effect after you publish this record.'
+  }
+  return draft.value.visible
+    ? 'This published record is visible on the public website.'
+    : 'This published record is hidden from the public website.'
+})
 const heading = ref<HTMLElement>()
 const confirmation = ref<HTMLDialogElement>()
 const dialogTitle = useId()
@@ -80,7 +88,15 @@ defineExpose({ dirty })
     <form @submit.prevent="save">
       <fieldset class="editor__fields" :disabled="props.pending">
         <legend class="a11y-only">{{ section.singular }} details</legend>
-        <ExperienceFields v-if="props.kind === 'experiences'" v-model="draft" />
+        <fieldset v-if="props.kind === 'experiences'" class="editor__group">
+          <legend>Role and dates</legend>
+          <ExperienceFields v-model="draft" />
+          <EditorImage
+            v-model="draft.image"
+            label="Company logo"
+            @loading="readingImage = $event"
+          />
+        </fieldset>
         <label v-else class="label">
           Name
           <input v-model="draft.name" required maxlength="120" />
@@ -100,12 +116,25 @@ defineExpose({ dirty })
           >
         </label>
 
+        <label v-if="props.kind === 'projects'" class="label">
+          Project URL
+          <input
+            v-model="draft.url"
+            type="url"
+            maxlength="2048"
+            placeholder="https://"
+            autocomplete="url"
+          />
+          <small class="muted">Optional. Use a public HTTPS or HTTP URL.</small>
+        </label>
+
         <label class="label">
           {{ props.kind === 'projects' ? 'Short description' : 'Description' }}
           <textarea v-model="draft.description" rows="3" maxlength="8000" />
         </label>
 
-        <template v-if="props.kind === 'experiences'">
+        <fieldset v-if="props.kind === 'experiences'" class="editor__group">
+          <legend>Responsibilities and achievements</legend>
           <label class="label">
             Responsibilities
             <textarea
@@ -118,7 +147,7 @@ defineExpose({ dirty })
             Achievements
             <textarea v-model="draft.achievements" rows="3" maxlength="8000" />
           </label>
-        </template>
+        </fieldset>
 
         <template v-if="props.kind === 'skills'">
           <div class="field-pair">
@@ -162,13 +191,18 @@ defineExpose({ dirty })
           />
         </template>
 
-        <RelationPicker
+        <fieldset
           v-if="props.kind === 'projects' || props.kind === 'experiences'"
-          v-model="draft.skillIds"
-          title="Related skills"
-          filter-label="Filter skills"
-          :choices="props.content.skills"
-        />
+          class="editor__group"
+        >
+          <legend>Related technology</legend>
+          <RelationPicker
+            v-model="draft.skillIds"
+            title="Related skills"
+            filter-label="Filter skills"
+            :choices="props.content.skills"
+          />
+        </fieldset>
         <EditorImage
           v-if="props.kind === 'projects'"
           v-model="draft.image"
@@ -176,7 +210,8 @@ defineExpose({ dirty })
           @loading="readingImage = $event"
         />
 
-        <div class="editor__publication">
+        <fieldset class="editor__publication">
+          <legend>Publication and display</legend>
           <div class="field-pair">
             <label class="label">
               Publication status
@@ -199,16 +234,12 @@ defineExpose({ dirty })
           </div>
           <label class="editor__visibility">
             <input v-model="draft.visible" type="checkbox" />
-            Visible on the public website
+            Visible after publishing
           </label>
           <p class="muted">
-            {{
-              draft.status === 'published' && draft.visible
-                ? 'Saving updates the public website immediately.'
-                : 'This record will be hidden from the public website.'
-            }}
+            {{ publicationMessage }}
           </p>
-        </div>
+        </fieldset>
 
         <p v-if="localError || props.failure" class="feedback" role="alert">
           {{ localError || props.failure }}
@@ -274,7 +305,9 @@ defineExpose({ dirty })
 }
 
 .editor__heading h2:focus {
-  outline: none;
+  outline: 2px solid var(--a-color-accent);
+  outline-offset: 4px;
+  border-radius: 0.125rem;
 }
 
 .editor__heading p {
@@ -290,20 +323,42 @@ defineExpose({ dirty })
   padding: 0;
 }
 
+.editor__group,
 .editor__publication {
   display: grid;
   gap: 0.625rem;
+  min-inline-size: 0;
+  border: 1px solid var(--admin-line);
+  border-radius: var(--a-radius-surface);
+  padding: var(--a-space-4);
+}
+
+.editor__publication {
   border-block-start: 1px solid var(--admin-line);
-  padding-block-start: var(--a-space-4);
+}
+
+.editor__group legend,
+.editor__publication legend {
+  padding-inline: 0.375rem;
+  color: var(--a-color-muted);
+  font-weight: 650;
 }
 
 .editor__visibility {
   cursor: pointer;
 }
 
-.editor__actions {
+.editor form > .editor__fields > .editor__actions {
   justify-content: flex-end;
   flex-wrap: wrap;
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
+  margin-inline: calc(clamp(1rem, 4vw, 1.75rem) * -1);
+  margin-block-end: calc(clamp(1rem, 4vw, 1.75rem) * -1);
+  padding: var(--a-space-3) clamp(1rem, 4vw, 1.75rem);
+  border-block-start: 1px solid var(--admin-line);
+  background: var(--admin-panel);
 }
 
 dialog {

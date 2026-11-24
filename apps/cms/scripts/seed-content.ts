@@ -95,6 +95,29 @@ const prisma: prismaModule.PrismaClient = getContext(
 
 try {
   await prisma.$transaction(async (transaction) => {
+    await transaction.siteSettings.upsert({
+      where: { key: 'portfolio' },
+      create: {
+        id: 'seed-site-settings-portfolio',
+        key: 'portfolio',
+        displayName: '',
+        headline: 'Software Engineer & AI-Native Product Builder',
+        biography:
+          'Frontend-focused Full-stack Engineer working at the intersection of software engineering, AI, product development, and system architecture.',
+        profileImage: '',
+        contactEmail: '',
+        phone: '',
+        location: '',
+        websiteUrl: '',
+        githubUrl: '',
+        gitlabUrl: '',
+        linkedinUrl: '',
+        xUrl: '',
+        ...seeded,
+      },
+      update: {},
+    })
+
     for (const [sortOrder, [category, name]] of Object.entries(
       categories,
     ).entries()) {

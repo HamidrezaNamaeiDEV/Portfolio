@@ -32,7 +32,7 @@ export const operations: Record<ContentKind, Operations> = {
     list: 'experiences',
     type: 'Experience',
     selection: `${editorial} company position startYear startMonth endYear endMonth employmentStatus
-      responsibilities achievements skills { id name }`,
+      responsibilities achievements companyLogo skills { id name }`,
     text: {
       company: 160,
       position: 160,
@@ -41,12 +41,13 @@ export const operations: Record<ContentKind, Operations> = {
     },
     integers: ['startYear', 'startMonth', 'endYear', 'endMonth'],
     many: ['skill'],
+    image: 'companyLogo',
   },
   projects: {
     list: 'projects',
     type: 'Project',
-    selection: `${editorial} name slug cover skills { id name }`,
-    text: { name: 120, slug: 120 },
+    selection: `${editorial} name slug url cover skills { id name }`,
+    text: { name: 120, slug: 120, url: 2048 },
     many: ['skill'],
     image: 'cover',
   },

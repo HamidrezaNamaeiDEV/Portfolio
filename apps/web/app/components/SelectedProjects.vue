@@ -25,7 +25,17 @@ defineProps<{
       >
         <article class="project-entry">
           <div>
-            <h3>{{ project.name }}</h3>
+            <h3>
+              <a
+                v-if="project.url"
+                :href="project.url"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {{ project.name }}
+              </a>
+              <template v-else>{{ project.name }}</template>
+            </h3>
             <p v-if="project.description" class="item-copy">
               {{ project.description }}
             </p>

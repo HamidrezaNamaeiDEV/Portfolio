@@ -51,8 +51,11 @@ Skills and work experience lead the portfolio. Projects are a short selected lis
 
 ## Phase 4 — Admin dashboard expansion
 
-- [ ] Obtain explicit owner approval before starting Phase 4 and confirm the next management modules.
-- [ ] Extend the existing admin only for approved workflows. Reassess private preview, revision history, and a dedicated media library against editorial needs.
+- [x] Obtain explicit owner approval and confirm the next management modules.
+- [x] Extend the existing admin for the approved overview, technology, experience, concise project, professional profile, and private preview workflows.
+- [x] Verify publication behavior, owner access, blank profile fields, mobile usability, and public SSR against a disposable PostgreSQL database.
+
+[Phase 4 implementation and checks](phase-4-admin-ux.md) · [Admin and preview decision](decisions/0008-admin-workspace-and-preview.md)
 
 ## Phase 5 — Public portfolio
 

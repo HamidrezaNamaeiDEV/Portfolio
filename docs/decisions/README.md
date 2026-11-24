@@ -11,3 +11,4 @@ Phase 1.5 reviewed these decisions on 24 November 2026. Phase 3 updated the init
 | [0005](0005-progressive-gallery.md) | Deliver the gallery as a progressive enhancement |
 | [0006](0006-media-and-hosting.md) | Private object storage and a single-VPS deployment |
 | [0007](0007-portfolio-content-foundation.md) | Prioritize skills and experience with simple publication and bounded image storage |
+| [0008](0008-admin-workspace-and-preview.md) | Extend the current admin with a CMS profile and owner-only draft preview |

@@ -35,6 +35,26 @@ model EditorialSession {
   @@index([expiresAt])
 }
 
+model SiteSettings {
+  id           String  @id @default(cuid())
+  key          String  @unique @default("portfolio")
+  displayName  String  @default("")
+  headline     String  @default("")
+  biography    String  @default("")
+  profileImage String  @default("")
+  contactEmail String  @default("")
+  phone        String  @default("")
+  location     String  @default("")
+  websiteUrl   String  @default("")
+  githubUrl    String  @default("")
+  gitlabUrl    String  @default("")
+  linkedinUrl  String  @default("")
+  xUrl         String  @default("")
+  sortOrder    Int     @default(0)
+  status       String  @default("draft")
+  visible      Boolean @default(true)
+}
+
 model SkillCategory {
   id                  String  @id @default(cuid())
   name                String  @unique @default("")
@@ -87,6 +107,7 @@ model Experience {
   responsibilities String  @default("")
   achievements     String  @default("")
   skills           Skill[] @relation("Experience_skills")
+  companyLogo      String  @default("")
   sortOrder        Int     @default(0)
   status           String  @default("draft")
   visible          Boolean @default(true)
@@ -96,6 +117,7 @@ model Project {
   id          String  @id @default(cuid())
   name        String  @default("")
   slug        String  @unique @default("")
+  url         String  @default("")
   description String  @default("")
   cover       String  @default("")
   skills      Skill[] @relation("Project_skills")

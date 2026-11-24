@@ -3,15 +3,9 @@ import type { PublicPortfolio } from '@a/contracts'
 import '@a/design-tokens'
 import './assets/portfolio.css'
 
-const description =
-  'Frontend-focused full-stack engineer working at the intersection of software engineering, AI, product development, and system architecture.'
-
-useSeoMeta({
-  description,
-  ogTitle: 'A/ Engineering Portfolio',
-  ogDescription: description,
-  ogType: 'website',
-})
+const fallbackHeadline = 'Software Engineer & AI-Native Product Builder'
+const fallbackBiography =
+  'Frontend-focused Full-stack Engineer working at the intersection of software engineering, AI, product development, and system architecture.'
 
 const {
   data: portfolio,
@@ -19,6 +13,33 @@ const {
   status,
   refresh,
 } = await useFetch<PublicPortfolio>('/api/portfolio')
+
+const profile = computed(() => portfolio.value?.profile ?? null)
+const headline = computed(() => profile.value?.headline || fallbackHeadline)
+const biography = computed(() => profile.value?.biography || fallbackBiography)
+const identity = computed(() => profile.value?.displayName || headline.value)
+const phoneHref = computed(() => {
+  const phone = profile.value?.phone.replace(/[^\d+(). -]/g, '').trim()
+  return phone ? `tel:${phone}` : ''
+})
+const socialLinks = computed(() => {
+  const current = profile.value
+  if (!current) return []
+  return [
+    { label: 'Website', href: current.websiteUrl },
+    { label: 'GitHub', href: current.githubUrl },
+    { label: 'GitLab', href: current.gitlabUrl },
+    { label: 'LinkedIn', href: current.linkedinUrl },
+    { label: 'X', href: current.xUrl },
+  ].filter((link) => link.href)
+})
+
+useSeoMeta({
+  description: () => biography.value,
+  ogTitle: 'A/ Engineering Portfolio',
+  ogDescription: () => biography.value,
+  ogType: 'website',
+})
 </script>
 
 <template>
@@ -37,10 +58,24 @@ const {
   <main id="main" class="frame" tabindex="-1">
     <section class="intro" aria-labelledby="identity">
       <div>
-        <h1 id="identity">Software Engineer &amp; AI-Native Product Builder</h1>
-        <p>{{ description }}</p>
+        <h1 id="identity">{{ identity }}</h1>
+        <p v-if="profile?.displayName">{{ headline }}</p>
+        <p>{{ biography }}</p>
       </div>
-      <div class="intro-composition" aria-hidden="true">
+      <div v-if="profile?.profileImage" class="intro-portrait">
+        <img
+          :src="profile.profileImage"
+          :alt="
+            profile.displayName
+              ? `${profile.displayName} portrait`
+              : 'Profile portrait'
+          "
+          width="352"
+          height="352"
+          fetchpriority="high"
+        />
+      </div>
+      <div v-else class="intro-composition" aria-hidden="true">
         <div class="intro-structure">
           <span></span><span></span><span></span><span></span>
         </div>
@@ -74,6 +109,22 @@ const {
 
   <footer class="site-footer frame">
     <span>A/ Engineering Portfolio</span>
-    <a href="#main">Back to top ↑</a>
+    <div class="site-footer__contact">
+      <span v-if="profile?.location">{{ profile.location }}</span>
+      <a v-if="profile?.contactEmail" :href="`mailto:${profile.contactEmail}`">
+        Email
+      </a>
+      <a v-if="phoneHref" :href="phoneHref">Phone</a>
+      <a
+        v-for="link in socialLinks"
+        :key="link.label"
+        :href="link.href"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {{ link.label }}
+      </a>
+      <a href="#main">Back to top ↑</a>
+    </div>
   </footer>
 </template>

@@ -128,6 +128,128 @@ input UserOrderByInput {
   isOwner: OrderDirection
 }
 
+type SiteSettings {
+  id: ID!
+  key: String
+  displayName: String
+  headline: String
+  biography: String
+  profileImage: String
+  contactEmail: String
+  phone: String
+  location: String
+  websiteUrl: String
+  githubUrl: String
+  gitlabUrl: String
+  linkedinUrl: String
+  xUrl: String
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input SiteSettingsWhereUniqueInput {
+  id: ID
+  key: String
+}
+
+input SiteSettingsWhereInput {
+  AND: [SiteSettingsWhereInput!]
+  OR: [SiteSettingsWhereInput!]
+  NOT: [SiteSettingsWhereInput!]
+  id: IDFilter
+  key: StringFilter
+  displayName: StringFilter
+  headline: StringFilter
+  biography: StringFilter
+  profileImage: StringFilter
+  contactEmail: StringFilter
+  phone: StringFilter
+  location: StringFilter
+  websiteUrl: StringFilter
+  githubUrl: StringFilter
+  gitlabUrl: StringFilter
+  linkedinUrl: StringFilter
+  xUrl: StringFilter
+  sortOrder: IntFilter
+  status: StringFilter
+  visible: BooleanFilter
+}
+
+input IntFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntFilter
+}
+
+input SiteSettingsOrderByInput {
+  id: OrderDirection
+  key: OrderDirection
+  displayName: OrderDirection
+  headline: OrderDirection
+  biography: OrderDirection
+  profileImage: OrderDirection
+  contactEmail: OrderDirection
+  phone: OrderDirection
+  location: OrderDirection
+  websiteUrl: OrderDirection
+  githubUrl: OrderDirection
+  gitlabUrl: OrderDirection
+  linkedinUrl: OrderDirection
+  xUrl: OrderDirection
+  sortOrder: OrderDirection
+  status: OrderDirection
+  visible: OrderDirection
+}
+
+input SiteSettingsUpdateInput {
+  key: String
+  displayName: String
+  headline: String
+  biography: String
+  profileImage: String
+  contactEmail: String
+  phone: String
+  location: String
+  websiteUrl: String
+  githubUrl: String
+  gitlabUrl: String
+  linkedinUrl: String
+  xUrl: String
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
+input SiteSettingsUpdateArgs {
+  where: SiteSettingsWhereUniqueInput!
+  data: SiteSettingsUpdateInput!
+}
+
+input SiteSettingsCreateInput {
+  key: String
+  displayName: String
+  headline: String
+  biography: String
+  profileImage: String
+  contactEmail: String
+  phone: String
+  location: String
+  websiteUrl: String
+  githubUrl: String
+  gitlabUrl: String
+  linkedinUrl: String
+  xUrl: String
+  sortOrder: Int
+  status: String
+  visible: Boolean
+}
+
 type SkillCategory {
   id: ID!
   name: String
@@ -152,17 +274,6 @@ input SkillCategoryWhereInput {
   sortOrder: IntFilter
   status: StringFilter
   visible: BooleanFilter
-}
-
-input IntFilter {
-  equals: Int
-  in: [Int!]
-  notIn: [Int!]
-  lt: Int
-  lte: Int
-  gt: Int
-  gte: Int
-  not: IntFilter
 }
 
 input SkillCategoryOrderByInput {
@@ -404,6 +515,7 @@ type Experience {
   achievements: String
   skills(where: SkillWhereInput! = {}, orderBy: [SkillOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SkillWhereUniqueInput): [Skill!]
   skillsCount(where: SkillWhereInput! = {}): Int
+  companyLogo: String
   sortOrder: Int
   status: String
   visible: Boolean
@@ -429,6 +541,7 @@ input ExperienceWhereInput {
   responsibilities: StringFilter
   achievements: StringFilter
   skills: SkillManyRelationFilter
+  companyLogo: StringFilter
   sortOrder: IntFilter
   status: StringFilter
   visible: BooleanFilter
@@ -478,6 +591,7 @@ input ExperienceOrderByInput {
   description: OrderDirection
   responsibilities: OrderDirection
   achievements: OrderDirection
+  companyLogo: OrderDirection
   sortOrder: OrderDirection
   status: OrderDirection
   visible: OrderDirection
@@ -495,6 +609,7 @@ input ExperienceUpdateInput {
   responsibilities: String
   achievements: String
   skills: SkillRelateToManyForUpdateInput
+  companyLogo: String
   sortOrder: Int
   status: String
   visible: Boolean
@@ -524,6 +639,7 @@ input ExperienceCreateInput {
   responsibilities: String
   achievements: String
   skills: SkillRelateToManyForCreateInput
+  companyLogo: String
   sortOrder: Int
   status: String
   visible: Boolean
@@ -539,6 +655,7 @@ type Project {
   id: ID!
   name: String
   slug: String
+  url: String
   description: String
   cover: String
   skills(where: SkillWhereInput! = {}, orderBy: [SkillOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SkillWhereUniqueInput): [Skill!]
@@ -560,6 +677,7 @@ input ProjectWhereInput {
   id: IDFilter
   name: StringFilter
   slug: StringFilter
+  url: StringFilter
   description: StringFilter
   cover: StringFilter
   skills: SkillManyRelationFilter
@@ -572,6 +690,7 @@ input ProjectOrderByInput {
   id: OrderDirection
   name: OrderDirection
   slug: OrderDirection
+  url: OrderDirection
   description: OrderDirection
   cover: OrderDirection
   sortOrder: OrderDirection
@@ -582,6 +701,7 @@ input ProjectOrderByInput {
 input ProjectUpdateInput {
   name: String
   slug: String
+  url: String
   description: String
   cover: String
   skills: SkillRelateToManyForUpdateInput
@@ -598,6 +718,7 @@ input ProjectUpdateArgs {
 input ProjectCreateInput {
   name: String
   slug: String
+  url: String
   description: String
   cover: String
   skills: SkillRelateToManyForCreateInput
@@ -618,6 +739,12 @@ type Mutation {
   updateFoundationProbes(data: [FoundationProbeUpdateArgs!]!): [FoundationProbe]
   deleteFoundationProbe(where: FoundationProbeWhereUniqueInput!): FoundationProbe
   deleteFoundationProbes(where: [FoundationProbeWhereUniqueInput!]!): [FoundationProbe]
+  createSiteSettings(data: SiteSettingsCreateInput!): SiteSettings
+  createProfiles(data: [SiteSettingsCreateInput!]!): [SiteSettings]
+  updateSiteSettings(where: SiteSettingsWhereUniqueInput!, data: SiteSettingsUpdateInput!): SiteSettings
+  updateProfiles(data: [SiteSettingsUpdateArgs!]!): [SiteSettings]
+  deleteSiteSettings(where: SiteSettingsWhereUniqueInput!): SiteSettings
+  deleteProfiles(where: [SiteSettingsWhereUniqueInput!]!): [SiteSettings]
   createSkillCategory(data: SkillCategoryCreateInput!): SkillCategory
   createSkillCategories(data: [SkillCategoryCreateInput!]!): [SkillCategory]
   updateSkillCategory(where: SkillCategoryWhereUniqueInput!, data: SkillCategoryUpdateInput!): SkillCategory
@@ -670,6 +797,9 @@ type Query {
   user(where: UserWhereUniqueInput!): User
   users(where: UserWhereInput! = {}, orderBy: [UserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserWhereUniqueInput): [User!]
   usersCount(where: UserWhereInput! = {}): Int
+  siteSettings(where: SiteSettingsWhereUniqueInput!): SiteSettings
+  profiles(where: SiteSettingsWhereInput! = {}, orderBy: [SiteSettingsOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SiteSettingsWhereUniqueInput): [SiteSettings!]
+  profilesCount(where: SiteSettingsWhereInput! = {}): Int
   skillCategory(where: SkillCategoryWhereUniqueInput!): SkillCategory
   skillCategories(where: SkillCategoryWhereInput! = {}, orderBy: [SkillCategoryOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: SkillCategoryWhereUniqueInput): [SkillCategory!]
   skillCategoriesCount(where: SkillCategoryWhereInput! = {}): Int

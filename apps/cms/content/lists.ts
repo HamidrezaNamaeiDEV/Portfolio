@@ -34,6 +34,40 @@ const year = (required = false) =>
   integer({ validation: { isRequired: required, min: 1, max: 9999 } })
 const month = (required = false) =>
   integer({ validation: { isRequired: required, min: 1, max: 12 } })
+const profileLinks = [
+  'websiteUrl',
+  'githubUrl',
+  'gitlabUrl',
+  'linkedinUrl',
+  'xUrl',
+] as const
+
+function isExternalUrl(value: unknown): boolean {
+  if (value === undefined || value === null || value === '') return true
+  if (typeof value !== 'string' || value.length > 2048) return false
+
+  try {
+    const url = new URL(value)
+    return (
+      (url.protocol === 'https:' || url.protocol === 'http:') &&
+      !url.username &&
+      !url.password
+    )
+  } catch {
+    return false
+  }
+}
+
+function isContactEmail(value: unknown): boolean {
+  return (
+    value === undefined ||
+    value === null ||
+    value === '' ||
+    (typeof value === 'string' &&
+      value.length <= 254 &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+  )
+}
 
 function editorialFields() {
   return {
@@ -105,6 +139,43 @@ export const lists = {
       }),
     },
   }),
+  SiteSettings: list({
+    access: ownerAccess,
+    graphql: { plural: 'Profiles' },
+    fields: {
+      key: text({ isIndexed: 'unique', defaultValue: 'portfolio' }),
+      displayName: copy(120),
+      headline: copy(240),
+      biography: copy(8000),
+      profileImage: imageField(),
+      contactEmail: copy(254),
+      phone: copy(80),
+      location: copy(160),
+      websiteUrl: copy(2048),
+      githubUrl: copy(2048),
+      gitlabUrl: copy(2048),
+      linkedinUrl: copy(2048),
+      xUrl: copy(2048),
+      ...editorialFields(),
+    },
+    hooks: {
+      validate: ({ operation, resolvedData, item, addValidationError }) => {
+        if (operation === 'delete') return
+        const value = (field: string) => resolvedData[field] ?? item?.[field]
+
+        for (const field of profileLinks) {
+          if (!isExternalUrl(value(field))) {
+            addValidationError(
+              'Enter an HTTP or HTTPS link without sign-in details.',
+            )
+          }
+        }
+        if (!isContactEmail(value('contactEmail'))) {
+          addValidationError('Enter a valid contact email address.')
+        }
+      },
+    },
+  }),
   SkillCategory: list({
     access: ownerAccess,
     graphql: { plural: 'SkillCategories' },
@@ -159,6 +230,7 @@ export const lists = {
       responsibilities: copy(3000),
       achievements: copy(3000),
       skills: relationship({ ref: 'Skill.experiences', many: true }),
+      companyLogo: imageField(),
       ...editorialFields(),
     },
     hooks: {
@@ -215,10 +287,23 @@ export const lists = {
               : resolvedFieldData,
         },
       }),
+      url: copy(2048),
       description: copy(500),
       cover: imageField(),
       skills: relationship({ ref: 'Skill.projects', many: true }),
       ...editorialFields(),
+    },
+    hooks: {
+      validate: ({ operation, resolvedData, item, addValidationError }) => {
+        if (
+          operation !== 'delete' &&
+          !isExternalUrl(resolvedData.url ?? item?.url)
+        ) {
+          addValidationError(
+            'Enter an HTTP or HTTPS link without sign-in details.',
+          )
+        }
+      },
     },
   }),
 }

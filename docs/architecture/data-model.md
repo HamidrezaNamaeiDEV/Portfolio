@@ -94,3 +94,21 @@ Use one project, one published skill and category, and one validated private ras
 Represent partial dates with original `calendar`, `year`, `month` and `precision`. Employment begins with `precision = MONTH`. Month-level values never acquire a source day. For sorting or Gregorian localization, derive a start-inclusive and end-exclusive range using a tested Persian-calendar conversion. Display the corresponding Gregorian month span when a Persian month crosses Gregorian months, or retain the original month in English where the owner prefers. Never present range boundaries as exact employment dates. Validate month values, range ordering and timezone-stable formatting, including Esfand and year rollover.
 
 Seed Bahman 1404 for Part Software Company and Khordad 1404 for SabzCoder Team as Persian months. Both records have unknown employment status and no end month. Render “Present” only when the owner confirms `CURRENT`. An ended record can still have an unknown end month. Keep the inventory's unverified skill levels explicit and avoid fictional project role, technology, or impact data. [Source profile and inventory](../../MASTER_PROMPT.md)
+
+## Phase 4 implementation extension
+
+Phase 4 extends the implemented Phase 3 lists without introducing the broader
+revision, media-library, or case-study model proposed above. `SiteSettings` is
+one Keystone row with the reserved key `portfolio`. It contains editable
+display name, headline, biography, profile image, contact and social URLs,
+publication status, and visibility. Empty identity and contact fields stay
+empty. Only the headline and biography supplied in `MASTER_PROMPT.md` are
+seeded, and the profile remains a draft.
+
+`Experience.companyLogo` and `Project.url` are optional fields. Profile and
+company images use the existing bounded image-string workflow; Phase 4 does not
+add a `Media` list or object-storage dependency. Project and profile links are
+validated as HTTP(S) URLs without credentials. The public contract includes
+profile values, company logos, and project URLs only through the existing
+published-and-visible projection. Draft content remains available only through
+the authenticated admin API.
